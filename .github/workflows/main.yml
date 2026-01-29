@@ -13,7 +13,7 @@ jobs:
   terraform:
     uses: ./.github/workflows/terraform.yml
     with:
-      aws-region: ${{ vars.AWS_REGION }}
+      aws-region: sa-east-1
     secrets:
       aws-assume-role-arn: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
       aws-statefile-s3-bucket: ${{ secrets.AWS_STATEFILE_S3_BUCKET }}
