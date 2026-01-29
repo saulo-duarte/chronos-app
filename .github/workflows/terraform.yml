@@ -27,10 +27,6 @@ on:
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,20 +46,11 @@ jobs:
       - name: Build Go Lambda
         run: |
           mkdir -p infra
-          CGO_ENABLED=0 \
-          GOOS=linux \
-          GOARCH=amd64 \
-          go build -ldflags="-s -w -extldflags '-static'" -o bootstrap main.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bootstrap main.go
           zip infra/bootstrap.zip bootstrap
 
       - name: Upload Lambda to S3
         run: aws s3 cp infra/bootstrap.zip s3://${{ secrets.lambda-s3-bucket }}/${{ secrets.lambda-s3-key }} --region ${{ inputs.aws-region }}
-
-      - name: Read destroy configuration
-        id: read-destroy-config
-        run: |
-          DESTROY="$(jq -r '.destroy' ./terraform/destroy-config.json)"
-          echo "destroy=$(echo $DESTROY)" >> $GITHUB_OUTPUT
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
@@ -77,20 +64,7 @@ jobs:
             -backend-config="key=chronos-serverless-api.tfstate" \
             -backend-config="region=${{ inputs.aws-region }}"
 
-      - name: Terraform Validate
-        run: cd terraform && terraform validate
-
-      - name: Terraform Destroy
-        if: steps.read-destroy-config.outputs.destroy == 'true'
-        run: cd terraform && terraform destroy -auto-approve \
-            -var="region=${{ inputs.aws-region }}" \
-            -var="lambda_function_name=${{ inputs.lambda-function-name }}" \
-            -var="s3_bucket=${{ secrets.lambda-s3-bucket }}" \
-            -var="s3_key=${{ secrets.lambda-s3-key }}" \
-            -var="parameter_store_key=${{ inputs.parameter-store-key }}"
-
       - name: Terraform Plan
-        if: steps.read-destroy-config.outputs.destroy != 'true'
         run: |
           terraform -chdir=terraform plan -out="plan.tfplan" \
             -var="region=${{ inputs.aws-region }}" \
@@ -100,5 +74,4 @@ jobs:
             -var="parameter_store_key=${{ inputs.parameter-store-key }}"
 
       - name: Terraform Apply
-        if: steps.read-destroy-config.outputs.destroy != 'true'
         run: cd terraform && terraform apply "plan.tfplan"
