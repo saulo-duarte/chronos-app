@@ -44,10 +44,14 @@ jobs:
           go-version: 1.23
 
       - name: Build Go Lambda
+        working-directory: ./backend 
         run: |
           mkdir -p infra
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o bootstrap main.go
-          zip infra/bootstrap.zip bootstrap
+          CGO_ENABLED=0 \
+          GOOS=linux \
+          GOARCH=amd64 \
+          go build -ldflags="-s -w -extldflags '-static'" -o bootstrap main.go
+          zip bootstrap.zip bootstrap
 
       - name: Upload Lambda to S3
         run: aws s3 cp infra/bootstrap.zip s3://${{ secrets.lambda-s3-bucket }}/${{ secrets.lambda-s3-key }} --region ${{ inputs.aws-region }}
