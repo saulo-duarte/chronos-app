@@ -17,7 +17,7 @@ type Config struct {
 
 func LoadConfig() *Config {
 	return &Config{
-		DBURL:              getEnv("DATABASE_URL", ""),
+		DBURL:              getEnv("DATABASE_DSN", ""),
 		JWTSecret:          getEnv("JWT_SECRET", "secret"),
 		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
