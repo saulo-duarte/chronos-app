@@ -6,12 +6,16 @@ import { TaskList } from "@/components/dashboard/task-list";
 import { RightPanel } from "@/components/dashboard/right-panel";
 import { CollectionModal } from "@/components/dashboard/collection-modal";
 import { useCollections } from "@/hooks/use-collections";
-import { useTasks } from "@/hooks/use-tasks";
+import { useTasks, useUpdateTask } from "@/hooks/use-tasks";
 import { Loader2 } from "lucide-react";
 import { useMemo } from "react";
+import { cn } from "@/lib/utils";
+import { TaskDetails } from "@/components/dashboard/task-details";
+import { StatsDashboard } from "@/components/dashboard/stats-dashboard";
+import { UpdateTaskDTO } from "@/types";
 
 export default function Dashboard() {
-  const { activeNav, setActiveNav } = useDashboardStore();
+  const { activeNav, setActiveNav, selectedTaskId, setSelectedTaskId } = useDashboardStore();
 
   const { data: collections = [], isLoading: loadingCollections } = useCollections();
 
@@ -19,12 +23,24 @@ export default function Dashboard() {
     return activeNav.startsWith("collection-") ? activeNav.replace("collection-", "") : undefined;
   }, [activeNav]);
 
-  const { isLoading: loadingTasks } = useTasks(selectedCollectionId);
+  const { data: tasks = [], isLoading: loadingTasks } = useTasks(selectedCollectionId);
+  const updateTaskMutation = useUpdateTask();
+
+  const handleMobileClose = () => {
+    setSelectedTaskId(null);
+  };
+
+  const handleUpdateTask = (id: string, updates: UpdateTaskDTO) => {
+    updateTaskMutation.mutate({ id, dto: updates });
+  };
+
+  const selectedTask = useMemo(() => 
+    tasks.find(t => t.id === selectedTaskId) || null
+  , [tasks, selectedTaskId]);
 
   const navTitle = useMemo(() => {
-    if (activeNav === "inbox") return "Inbox";
-    if (activeNav === "today") return "Today";
-    if (activeNav === "upcoming") return "Upcoming";
+    if (activeNav === "dashboard") return "Dashboard";
+    if (activeNav === "tasks") return "Tasks";
     if (selectedCollectionId) {
       return collections.find(c => c.id === selectedCollectionId)?.title || "Collection";
     }
@@ -47,12 +63,31 @@ export default function Dashboard() {
       />
       
       <main className="flex flex-1 overflow-hidden">
-        <TaskList title={navTitle} />
-        
-        <div className="hidden xl:block">
-          <RightPanel />
-        </div>
+        {activeNav === "dashboard" ? (
+          <StatsDashboard />
+        ) : (
+          <>
+            <TaskList title={navTitle} />
+            <div className="hidden xl:block">
+              <RightPanel />
+            </div>
+          </>
+        )}
       </main>
+
+      {selectedTask && (
+        <div className={cn(
+          "fixed inset-0 z-50 bg-background xl:hidden",
+          "animate-in slide-in-from-right duration-300"
+        )}>
+          <TaskDetails
+            task={selectedTask}
+            collections={collections}
+            onClose={handleMobileClose}
+            onUpdate={handleUpdateTask}
+          />
+        </div>
+      )}
 
       <CollectionModal />
     </div>

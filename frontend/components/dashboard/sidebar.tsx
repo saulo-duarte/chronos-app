@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
-  Inbox,
-  CalendarDays,
-  CalendarClock,
+  LayoutDashboard,
+  ListTodo,
   Plus,
   Clock,
   ChevronDown,
@@ -19,16 +18,16 @@ import {
 import { useCollections } from "@/hooks/use-collections";
 import { CollectionItem } from "./collection-item";
 import { useCollectionModal } from "@/stores/use-collection-modal";
+import { DashboardView } from "@/stores/use-dashboard-store";
 
 interface SidebarProps {
   activeNav: string;
-  onNavChange: (nav: string) => void;
+  onNavChange: (nav: string, view?: DashboardView) => void;
 }
 
 const navItems = [
-  { id: "inbox", label: "Inbox", icon: Inbox },
-  { id: "today", label: "Today", icon: CalendarDays },
-  { id: "upcoming", label: "Upcoming", icon: CalendarClock },
+  { id: "tasks", label: "Tasks", icon: ListTodo },
+  { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
 ];
 
 export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
@@ -121,7 +120,7 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50 lg:hidden">
+      <div className="fixed bottom-20 right-6 z-50 lg:hidden">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button size="icon" className="size-12 rounded-full shadow-2xl ring-4 ring-background">
