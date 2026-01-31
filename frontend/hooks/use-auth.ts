@@ -36,7 +36,7 @@ export function useLogout() {
 
 export function useLoginWithGoogle() {
     const login = () => {
-        window.location.href = "http://localhost:3001/api/v1/auth/login";
+        window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/auth/login`;
     };
 
     return { login };
