@@ -40,7 +40,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
-func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
+func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	if code == "" {
 		response.Error(w, http.StatusBadRequest, "MISSING_CODE", "Código não fornecido")
