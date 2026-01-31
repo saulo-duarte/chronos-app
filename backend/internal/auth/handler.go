@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"log"
 	"net/http"
 	"os"
 
@@ -16,8 +17,6 @@ type AuthHandler struct {
 	service     *AuthService
 	oauthConfig *oauth2.Config
 }
-
-var RUN_MODE = os.Getenv("RUN_MODE")
 
 func NewAuthHandler(service *AuthService, cfg *config.Config) *AuthHandler {
 	return &AuthHandler{
@@ -61,18 +60,22 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 
 	sharedauth.SetAuthCookie(w, result.AccessToken)
 
-	var redirectURL = "https://chronosapp.site"
+	runMode := os.Getenv("RUN_MODE")
 
-	if RUN_MODE == "local" {
+	redirectURL := "https://chronosapp.site"
+
+	if runMode == "local" {
 		redirectURL = "http://localhost:3000"
 	}
+
+	log.Printf("[AUTH_DEBUG] RunMode capturado: '%s'", runMode)
+	log.Printf("[AUTH_DEBUG] Redirecionando usuário %s para: %s", googleUser.Email, redirectURL)
 
 	http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 	sharedauth.CleanAuthCookie(w)
-
 	response.JSON(w, http.StatusOK, map[string]string{"message": "Logout realizado com sucesso"})
 }
 
