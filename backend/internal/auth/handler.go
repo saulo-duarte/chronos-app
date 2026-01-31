@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/google/uuid"
 	sharedauth "github.com/saulo-duarte/chronos/internal/shared/auth"
@@ -15,6 +16,8 @@ type AuthHandler struct {
 	service     *AuthService
 	oauthConfig *oauth2.Config
 }
+
+var RUN_MODE = os.Getenv("RUN_MODE")
 
 func NewAuthHandler(service *AuthService, cfg *config.Config) *AuthHandler {
 	return &AuthHandler{
@@ -37,7 +40,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
-func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
 	code := r.URL.Query().Get("code")
 	if code == "" {
 		response.Error(w, http.StatusBadRequest, "MISSING_CODE", "Código não fornecido")
@@ -58,8 +61,13 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 
 	sharedauth.SetAuthCookie(w, result.AccessToken)
 
-	// Redireciona de volta para o frontend
-	http.Redirect(w, r, "http://localhost:3000", http.StatusTemporaryRedirect)
+	var redirectURL = "https://chronosapp.site"
+
+	if RUN_MODE == "local" {
+		redirectURL = "http://localhost:3000"
+	}
+
+	http.Redirect(w, r, redirectURL, http.StatusTemporaryRedirect)
 }
 
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
