@@ -20,10 +20,11 @@ type Resource struct {
 	UserID       uuid.UUID    `json:"user_id" gorm:"type:uuid;index;not null"`
 	Title        string       `json:"title" gorm:"not null"`
 	Description  *string      `json:"description,omitempty"`
-	Path         string       `json:"path" gorm:"not null"`  // URL ou caminho do arquivo
-	Type         ResourceType `json:"type" gorm:"not null"`  // FILE ou LINK
-	Size         int64        `json:"size" gorm:"default:0"` // Tamanho em bytes (0 para links)
-	MimeType     *string      `json:"mime_type,omitempty"`   // Tipo MIME do arquivo
+	Tag          *string      `json:"tag,omitempty"`
+	Path         string       `json:"path" gorm:"not null"`
+	Type         ResourceType `json:"type" gorm:"not null"`
+	Size         int64        `json:"size" gorm:"default:0"`
+	MimeType     *string      `json:"mime_type,omitempty"`
 	CreatedAt    time.Time    `json:"created_at"`
 	UpdatedAt    time.Time    `json:"updated_at"`
 	DeletedAt    *time.Time   `json:"deleted_at,omitempty"`

@@ -12,6 +12,7 @@ type CreateResourceDTO struct {
 	CollectionID uuid.UUID    `json:"collection_id" validate:"required"`
 	Title        string       `json:"title" validate:"required,min=1,max=200"`
 	Description  *string      `json:"description,omitempty" validate:"omitempty,max=1000"`
+	Tag          *string      `json:"tag,omitempty" validate:"omitempty,max=100"`
 	Path         string       `json:"path" validate:"required"`
 	Type         ResourceType `json:"type" validate:"required,oneof=FILE LINK"`
 	Size         int64        `json:"size" validate:"omitempty,min=0"`
@@ -22,6 +23,7 @@ type CreateResourceDTO struct {
 type UpdateResourceDTO struct {
 	Title       *string `json:"title" validate:"omitempty,min=1,max=200"`
 	Description *string `json:"description" validate:"omitempty,max=1000"`
+	Tag         *string `json:"tag" validate:"omitempty,max=100"`
 }
 
 type ResourceResponseDTO struct {
@@ -30,6 +32,7 @@ type ResourceResponseDTO struct {
 	UserID       uuid.UUID    `json:"user_id"`
 	Title        string       `json:"title"`
 	Description  *string      `json:"description,omitempty"`
+	Tag          *string      `json:"tag,omitempty"`
 	Path         string       `json:"path"`
 	Type         ResourceType `json:"type"`
 	Size         int64        `json:"size"`
@@ -43,6 +46,7 @@ func (dto *CreateResourceDTO) ToEntity() *Resource {
 		CollectionID: dto.CollectionID,
 		Title:        dto.Title,
 		Description:  dto.Description,
+		Tag:          dto.Tag,
 		Path:         dto.Path,
 		Type:         dto.Type,
 		Size:         dto.Size,
@@ -62,6 +66,7 @@ func ToResponse(r Resource, s *storage.Client) ResourceResponseDTO {
 		UserID:       r.UserID,
 		Title:        r.Title,
 		Description:  r.Description,
+		Tag:          r.Tag,
 		Path:         path,
 		Type:         r.Type,
 		Size:         r.Size,
