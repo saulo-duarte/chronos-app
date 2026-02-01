@@ -81,8 +81,7 @@ export function ResourcesList({
   };
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
+    <div className="flex flex-col flex-1 min-h-0 h-full">
       <div className="border-b border-border px-6 py-4 space-y-4">
         <div className="flex items-center justify-between">
           <div>

@@ -76,31 +76,53 @@ export function TaskList({ title }: TaskListProps) {
   const filteredTasks = useMemo(() => {
     const now = new Date();
 
-    return tasks.filter((t) => {
-      if (filterPriority !== "ALL" && t.priority !== filterPriority) return false;
-      if (filterStatus !== "ALL" && filterStatus !== t.status) return false;
+    const priorityOrder: Record<string, number> = {
+      HIGH: 0,
+      MEDIUM: 1,
+      LOW: 2,
+    };
 
-      if (view === "today") {
-        if (!t.end_time) return false;
-        const taskDate = parseISO(t.end_time);
-        return isSameDay(taskDate, now);
-      }
+    return tasks
+      .filter((t) => {
+        if (filterPriority !== "ALL" && t.priority !== filterPriority) return false;
+        if (filterStatus !== "ALL" && filterStatus !== t.status) return false;
 
-      if (view === "week") {
-        if (!t.end_time) return false;
-        const taskDate = parseISO(t.end_time);
-        return isSameWeek(taskDate, selectedDate, { weekStartsOn: 0 });
-      }
+        if (view === "today") {
+          if (!t.end_time) return false;
+          const taskDate = parseISO(t.end_time);
+          return isSameDay(taskDate, now);
+        }
 
-      if (view === "overdue") {
-        if (t.status === "DONE") return false;
-        if (!t.end_time) return false;
-        const taskEndDate = parseISO(t.end_time);
-        return isBefore(taskEndDate, now);
-      }
+        if (view === "week") {
+          if (!t.end_time) return false;
+          const taskDate = parseISO(t.end_time);
+          return isSameWeek(taskDate, selectedDate, { weekStartsOn: 0 });
+        }
 
-      return true;
-    });
+        if (view === "overdue") {
+          if (t.status === "DONE") return false;
+          if (!t.end_time) return false;
+          const taskEndDate = parseISO(t.end_time);
+          return isBefore(taskEndDate, now);
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        if (a.end_time && b.end_time) {
+          const dateA = new Date(a.end_time).getTime();
+          const dateB = new Date(b.end_time).getTime();
+          if (dateA !== dateB) return dateA - dateB;
+        } else if (a.end_time) {
+          return -1;
+        } else if (b.end_time) {
+          return 1;
+        }
+
+        const pA = priorityOrder[a.priority] ?? 2;
+        const pB = priorityOrder[b.priority] ?? 2;
+        return pA - pB;
+      });
   }, [tasks, filterPriority, filterStatus, view, selectedDate]);
 
   const incompleteTasks = filteredTasks.filter((t) => t.status === "PENDING");
@@ -209,7 +231,7 @@ export function TaskList({ title }: TaskListProps) {
         )}
       </header>
 
-      <main className="flex-1 relative overflow-hidden">
+      <main className="flex-1 relative overflow-hidden flex flex-col min-h-0">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
             <Loader2 className="size-8 animate-spin text-primary/40" />

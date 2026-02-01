@@ -86,7 +86,6 @@ export function AddResourceDialog({
             </TabsList>
 
             <div className="space-y-4 mt-4">
-              {/* Campo de Tag compartilhado entre File e Link */}
               <div className="space-y-2">
                 <Label htmlFor="resource-tag" className="flex items-center gap-2">
                   <TagIcon className="size-3" /> Tag (opcional)

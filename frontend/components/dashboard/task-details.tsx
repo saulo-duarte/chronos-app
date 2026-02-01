@@ -26,7 +26,8 @@ import {
   AlignLeft, 
   CheckCircle2, 
   Circle,
-  Clock
+  Clock,
+  Trash2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +35,7 @@ interface TaskDetailsProps {
   task: Task;
   collections: Collection[];
   onUpdate: (id: string, updates: UpdateTaskDTO) => void;
+  onDelete: (id: string) => void;
   onClose: () => void;
 }
 
@@ -41,6 +43,7 @@ export function TaskDetails({
   task,
   collections,
   onUpdate,
+  onDelete,
   onClose,
 }: TaskDetailsProps) {
   const formatForInput = (dateStr?: string) => {
@@ -48,9 +51,7 @@ export function TaskDetails({
     try {
       const date = new Date(dateStr);
       return format(date, "yyyy-MM-dd'T'HH:mm");
-    } catch {
-      return "";
-    }
+    } catch { return ""; }
   };
 
   const [title, setTitle] = useState(task.title);
@@ -61,12 +62,12 @@ export function TaskDetails({
   const [startTime, setStartTime] = useState<string>(formatForInput(task.start_time));
   const [endTime, setEndTime] = useState<string>(formatForInput(task.end_time));
   
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const titleRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    if (titleRef.current) {
+      titleRef.current.style.height = "auto";
+      titleRef.current.style.height = `${titleRef.current.scrollHeight}px`;
     }
   }, [title]);
 
@@ -90,24 +91,34 @@ export function TaskDetails({
   };
 
   return (
-    <div className="flex h-full flex-col bg-background relative">
-      <div className="flex items-center gap-2 px-4 py-3 md:px-6">
-        <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
-          <ArrowLeft className="size-5" />
+    <div className="flex flex-col h-full w-full bg-background overflow-hidden relative">
+      <div className="flex items-center justify-between px-4 py-3 md:px-6 shrink-0 border-b border-border/50 bg-background z-10">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={onClose} className="rounded-full">
+            <ArrowLeft className="size-5" />
+          </Button>
+          <span className="text-sm font-semibold text-muted-foreground">Edit Task</span>
+        </div>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => onDelete(task.id)} 
+          className="rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+        >
+          <Trash2 className="size-4" />
         </Button>
-        <span className="text-sm font-semibold text-muted-foreground">Edit Task</span>
       </div>
 
-      <ScrollArea className="flex-1 px-4 pb-32 md:px-6">
-        <div className="max-w-3xl mx-auto space-y-8 py-4">
+      <ScrollArea className="flex-1 h-full w-full">
+        <div className="flex flex-col gap-8 px-4 py-6 md:px-6 pb-40">
           <div className="space-y-2">
             <textarea
-              ref={textareaRef}
+              ref={titleRef}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               onBlur={handleUpdate}
               placeholder="Task Title"
-              className="w-full resize-none border-none bg-transparent p-0 text-3xl font-bold text-foreground placeholder:text-muted-foreground focus:ring-0 break-words"
+              className="w-full resize-none border-none bg-transparent p-0 text-3xl font-bold text-foreground placeholder:text-muted-foreground focus:ring-0 break-words overflow-hidden"
               rows={1}
             />
           </div>
@@ -117,13 +128,10 @@ export function TaskDetails({
               <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 <Flag className="size-3" /> Priority
               </label>
-              <Select
-                value={priority}
-                onValueChange={(v) => {
-                  setPriority(v as Priority);
-                  onUpdate(task.id, { priority: v as Priority });
-                }}
-              >
+              <Select value={priority} onValueChange={(v) => {
+                setPriority(v as Priority);
+                onUpdate(task.id, { priority: v as Priority });
+              }}>
                 <SelectTrigger className="h-7 border-none bg-transparent p-0 shadow-none focus:ring-0 text-sm font-semibold w-full">
                   <SelectValue />
                 </SelectTrigger>
@@ -139,22 +147,17 @@ export function TaskDetails({
               <label className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                 <Folder className="size-3" /> Collection
               </label>
-              <Select
-                value={collectionId}
-                onValueChange={(v) => {
-                  setCollectionId(v);
-                  onUpdate(task.id, { collection_id: v === "none" ? undefined : v });
-                }}
-              >
+              <Select value={collectionId} onValueChange={(v) => {
+                setCollectionId(v);
+                onUpdate(task.id, { collection_id: v === "none" ? undefined : v });
+              }}>
                 <SelectTrigger className="h-7 border-none bg-transparent p-0 shadow-none focus:ring-0 text-sm font-semibold w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">No collection</SelectItem>
                   {collections.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.title}
-                    </SelectItem>
+                    <SelectItem key={c.id} value={c.id}>{c.title}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -163,41 +166,37 @@ export function TaskDetails({
 
           <div className="space-y-4">
             <div className="flex flex-col gap-4 p-4 rounded-2xl bg-muted/20 border border-dashed border-border">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-background shadow-sm">
-                    <Clock className="size-4 text-primary" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase text-muted-foreground">Start Time</span>
-                    <input
-                      type="datetime-local"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      onBlur={handleUpdate}
-                      className="bg-transparent text-sm font-medium focus:outline-none w-full"
-                    />
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-background shadow-sm">
+                  <Clock className="size-4 text-primary" />
+                </div>
+                <div className="flex flex-col flex-1">
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">Start Time</span>
+                  <input
+                    type="datetime-local"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    onBlur={handleUpdate}
+                    className="bg-transparent text-sm font-medium focus:outline-none w-full"
+                  />
                 </div>
               </div>
               
               <div className="h-px bg-border/50 w-full" />
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-background shadow-sm">
-                    <Calendar className="size-4 text-destructive" />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-bold uppercase text-muted-foreground">Due Date</span>
-                    <input
-                      type="datetime-local"
-                      value={endTime}
-                      onChange={(e) => setEndTime(e.target.value)}
-                      onBlur={handleUpdate}
-                      className="bg-transparent text-sm font-medium focus:outline-none w-full"
-                    />
-                  </div>
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-full bg-background shadow-sm">
+                  <Calendar className="size-4 text-destructive" />
+                </div>
+                <div className="flex flex-col flex-1">
+                  <span className="text-[10px] font-bold uppercase text-muted-foreground">Due Date</span>
+                  <input
+                    type="datetime-local"
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    onBlur={handleUpdate}
+                    className="bg-transparent text-sm font-medium focus:outline-none w-full"
+                  />
                 </div>
               </div>
             </div>
@@ -211,12 +210,13 @@ export function TaskDetails({
                 onChange={(e) => setDescription(e.target.value)}
                 onBlur={handleUpdate}
                 placeholder="Write some details here..."
-                className="min-h-[120px] w-full resize-none rounded-2xl border-none bg-muted/30 p-4 text-base text-foreground focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground/50"
+                className="w-full min-h-[120px] resize-none rounded-2xl border-none bg-muted/30 p-4 text-base text-foreground focus:ring-2 focus:ring-primary/20 placeholder:text-muted-foreground/50 overflow-hidden"
+                style={{ fieldSizing: 'content' }}
               />
             </div>
           </div>
           
-          <div className="pb-10 text-center">
+          <div className="text-center">
              <p className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-widest">
               Created on {format(new Date(task.created_at), "PPP p")}
             </p>
@@ -224,27 +224,21 @@ export function TaskDetails({
         </div>
       </ScrollArea>
 
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-transparent pt-10">
+      <div className="md:hidden absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-background via-background to-transparent pt-10 z-20">
         <Button
           onClick={toggleStatus}
           size="lg"
           className={cn(
-            "w-full h-14 rounded-2xl text-base font-semibold transition-all active:scale-[0.98] shadow-xl shadow-primary/10",
+            "w-full h-14 rounded-2xl text-base font-semibold shadow-xl",
             status === "DONE" 
               ? "bg-emerald-500 hover:bg-emerald-600 text-white" 
               : "bg-primary hover:bg-primary/90 text-primary-foreground"
           )}
         >
           {status === "DONE" ? (
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="size-6" />
-              Completed
-            </div>
+            <div className="flex items-center gap-2"><CheckCircle2 className="size-6" /> Completed</div>
           ) : (
-            <div className="flex items-center gap-2">
-              <Circle className="size-6" />
-              Mark as Complete
-            </div>
+            <div className="flex items-center gap-2"><Circle className="size-6" /> Mark as Complete</div>
           )}
         </Button>
       </div>

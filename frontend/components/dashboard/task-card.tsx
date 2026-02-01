@@ -56,11 +56,11 @@ export function TaskCard({ task, collection, onToggleComplete, onEdit, isActive 
       )}
       onClick={onEdit}
     >
-      <div onClick={(e) => e.stopPropagation()}>
+      <div onClick={(e) => e.stopPropagation()} className="flex">
         <Checkbox
             checked={isCompleted}
-            onCheckedChange={() => 
-            onToggleComplete(task.id, isCompleted ? "PENDING" : "DONE")
+            onCheckedChange={(checked) => 
+              onToggleComplete(task.id, checked ? "DONE" : "PENDING")
             }
             className="mt-0.5 size-5 rounded-full"
         />
