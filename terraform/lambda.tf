@@ -36,17 +36,12 @@ resource "aws_lambda_function" "go_lambda" {
 
       GOOGLE_CLIENT_ID     = data.aws_ssm_parameter.google_client_id.value
       GOOGLE_CLIENT_SECRET = data.aws_ssm_parameter.google_client_secret.value
-      # Ajustado para o nome que está no seu print
-      GOOGLE_REDIRECT_URL = data.aws_ssm_parameter.google_redirect_url.value
+      GOOGLE_REDIRECT_URL  = data.aws_ssm_parameter.google_redirect_url.value
 
       SUPABASE_API_KEY             = data.aws_ssm_parameter.supabase_api_key.value
       SUPABASE_STORAGE_BUCKET_NAME = data.aws_ssm_parameter.supabase_bucket.value
       SUPABASE_STORAGE_BASE_URL    = data.aws_ssm_parameter.supabase_url.value
-
-      # ATENÇÃO: Comentei os campos abaixo porque não existem no seu print. 
-      # Se sua Lambda precisar deles, você DEVE criá-los no AWS SSM primeiro.
-      # FRONTEND_URL         = data.aws_ssm_parameter.frontend_url.value
-      # SUPABASE_API_SECRET  = data.aws_ssm_parameter.supabase_api_secret.value
+      SUPABASE_API_SECRET          = data.aws_ssm_parameter.supabase_api_secret.value
 
       API_DOMAIN = "api.chronosapp.site"
       LOCAL_TEST = "false"
