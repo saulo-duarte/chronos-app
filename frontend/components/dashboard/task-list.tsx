@@ -34,7 +34,8 @@ import {
   endOfWeek,
   format,
   addWeeks,
-  subWeeks
+  subWeeks,
+  startOfDay
 } from "date-fns";
 import { Priority, Status } from "@/types";
 import { DashboardView, useDashboardStore } from "@/stores/use-dashboard-store";
@@ -73,37 +74,28 @@ export function TaskList({ title }: TaskListProps) {
   const updateStatusMutation = useUpdateTaskStatus();
   const createTaskMutation = useCreateTask();
 
-  const filteredTasks = useMemo(() => {
+  const groupedTasks = useMemo(() => {
     const now = new Date();
+    const priorityOrder: Record<string, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
 
-    const priorityOrder: Record<string, number> = {
-      HIGH: 0,
-      MEDIUM: 1,
-      LOW: 2,
-    };
-
-    return tasks
+    const filtered = tasks
       .filter((t) => {
         if (filterPriority !== "ALL" && t.priority !== filterPriority) return false;
         if (filterStatus !== "ALL" && filterStatus !== t.status) return false;
 
         if (view === "today") {
           if (!t.end_time) return false;
-          const taskDate = parseISO(t.end_time);
-          return isSameDay(taskDate, now);
+          return isSameDay(parseISO(t.end_time), now);
         }
 
         if (view === "week") {
           if (!t.end_time) return false;
-          const taskDate = parseISO(t.end_time);
-          return isSameWeek(taskDate, selectedDate, { weekStartsOn: 0 });
+          return isSameWeek(parseISO(t.end_time), selectedDate, { weekStartsOn: 0 });
         }
 
         if (view === "overdue") {
-          if (t.status === "DONE") return false;
-          if (!t.end_time) return false;
-          const taskEndDate = parseISO(t.end_time);
-          return isBefore(taskEndDate, now);
+          if (t.status === "DONE" || !t.end_time) return false;
+          return isBefore(parseISO(t.end_time), startOfDay(now));
         }
 
         return true;
@@ -113,19 +105,25 @@ export function TaskList({ title }: TaskListProps) {
           const dateA = new Date(a.end_time).getTime();
           const dateB = new Date(b.end_time).getTime();
           if (dateA !== dateB) return dateA - dateB;
-        } else if (a.end_time) {
-          return -1;
-        } else if (b.end_time) {
-          return 1;
         }
-
-        const pA = priorityOrder[a.priority] ?? 2;
-        const pB = priorityOrder[b.priority] ?? 2;
-        return pA - pB;
+        return (priorityOrder[a.priority] ?? 2) - (priorityOrder[b.priority] ?? 2);
       });
+
+    const groups: Record<string, typeof tasks> = {};
+    filtered.forEach(task => {
+      const dateKey = task.end_time 
+        ? format(parseISO(task.end_time), "yyyy-MM-dd") 
+        : "No Date";
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(task);
+    });
+
+    return groups;
   }, [tasks, filterPriority, filterStatus, view, selectedDate]);
 
-  const incompleteTasks = filteredTasks.filter((t) => t.status === "PENDING");
+  const incompleteCount = useMemo(() => 
+    tasks.filter(t => t.status === "PENDING").length
+  , [tasks]);
 
   const handleToggleComplete = (id: string, currentStatus: Status) => {
     updateStatusMutation.mutate({ id, status: currentStatus });
@@ -149,6 +147,8 @@ export function TaskList({ title }: TaskListProps) {
     { id: "overdue", label: "Overdue", icon: AlertCircle },
   ];
 
+  const groupKeys = Object.keys(groupedTasks).sort();
+
   return (
     <div className="flex flex-1 flex-col bg-background h-full overflow-hidden">
       <header className="flex flex-col border-b border-border bg-card/50 backdrop-blur-sm">
@@ -157,7 +157,7 @@ export function TaskList({ title }: TaskListProps) {
             <div className="space-y-0.5">
               <h1 className="text-xl font-bold tracking-tight text-foreground md:text-2xl">{title}</h1>
               <p className="text-xs text-muted-foreground">
-                {incompleteTasks.length} {incompleteTasks.length === 1 ? "task remaining" : "tasks remaining"}
+                {incompleteCount} {incompleteCount === 1 ? "task remaining" : "tasks remaining"}
               </p>
             </div>
             
@@ -253,23 +253,36 @@ export function TaskList({ title }: TaskListProps) {
                 </div>
               )}
 
-              <div className="mb-6">
+              <div className="mb-8">
                 <QuickAdd onAddTask={handleAddTask} />
               </div>
 
-              <div className="grid gap-3">
-                {filteredTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    collection={collections.find((c) => c.id === task.collection_id)}
-                    onToggleComplete={handleToggleComplete}
-                    onEdit={() => setSelectedTaskId(task.id)}
-                    isActive={selectedTaskId === task.id}
-                  />
-                ))}
-
-                {filteredTasks.length === 0 && (
+              <div className="space-y-8">
+                {groupKeys.length > 0 ? (
+                  groupKeys.map((dateKey) => (
+                    <div key={dateKey} className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-[1px] flex-1 bg-border/60" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-primary/85 whitespace-nowrap">
+                          {dateKey === "No Date" ? dateKey : format(parseISO(dateKey), "EEEE, MMM dd")}
+                        </span>
+                        <div className="h-[1px] flex-1 bg-border/60" />
+                      </div>
+                      <div className="grid gap-3">
+                        {groupedTasks[dateKey].map((task) => (
+                          <TaskCard
+                            key={task.id}
+                            task={task}
+                            collection={collections.find((c) => c.id === task.collection_id)}
+                            onToggleComplete={handleToggleComplete}
+                            onEdit={() => setSelectedTaskId(task.id)}
+                            isActive={selectedTaskId === task.id}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))
+                ) : (
                   <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in duration-500">
                     <div className="flex size-16 items-center justify-center rounded-full bg-muted/50 mb-4">
                       {view === "overdue" ? (

@@ -63,7 +63,7 @@ export function RightPanel() {
           onDelete={handleDeleteTask}
         />
       ) : (
-        <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex flex-col h-full min-w-0">
           <div className="flex items-center justify-between border-b border-border px-4 py-4 shrink-0">
             <h3 className="text-sm font-semibold text-foreground">Weekly Progress</h3>
             <Button variant="ghost" size="icon" onClick={() => setCollapsed(true)} className="size-7">
@@ -71,7 +71,7 @@ export function RightPanel() {
             </Button>
           </div>
 
-          <ScrollArea className="flex-1 w-full">
+          <ScrollArea className="flex-1">
             <div className="p-4 space-y-8 pb-10">
               <div className="flex flex-col items-center py-6">
                 <ProgressRing progress={progress} />
@@ -92,7 +92,7 @@ export function RightPanel() {
                 </div>
               </div>
 
-              <div className="">
+              <div>
                 <h4 className="mb-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 px-1">
                   Recently Completed
                 </h4>
@@ -100,15 +100,19 @@ export function RightPanel() {
                   {completedTasks.slice(0, 5).map((task) => (
                     <div
                       key={task.id}
-                      className="group flex items-center gap-3 rounded-lg bg-muted/20 p-2.5 transition-all hover:bg-muted/40 cursor-pointer border border-transparent hover:border-border/50"
                       onClick={() => setSelectedTaskId(task.id)}
+                      className="group grid grid-cols-[auto_1fr] items-center gap-3 rounded-lg bg-muted/20 p-2.5 transition-all hover:bg-muted/40 cursor-pointer border border-transparent hover:border-border/50"
                     >
                       <CheckCircle2 className="size-4 text-primary shrink-0 opacity-70 group-hover:opacity-100" />
-                      <p className="truncate text-xs text-muted-foreground line-through decoration-muted-foreground/50">
-                        {task.title}
-                      </p>
+                      
+                      <span className="min-w-0">
+                        <p className="truncate text-xs text-muted-foreground line-through decoration-muted-foreground/50">
+                          {task.title}
+                        </p>
+                      </span>
                     </div>
                   ))}
+                  
                   {completedTasks.length === 0 && (
                     <div className="rounded-lg border border-dashed border-border p-6 text-center">
                       <p className="text-xs text-muted-foreground">Nada concluído ainda</p>
