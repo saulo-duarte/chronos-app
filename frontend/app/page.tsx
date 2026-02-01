@@ -6,7 +6,7 @@ import { TaskList } from "@/components/dashboard/task-list";
 import { RightPanel } from "@/components/dashboard/right-panel";
 import { CollectionModal } from "@/components/dashboard/collection-modal";
 import { useCollections } from "@/hooks/use-collections";
-import { useTasks, useUpdateTask } from "@/hooks/use-tasks";
+import { useDeleteTask, useTasks, useUpdateTask } from "@/hooks/use-tasks";
 import { Loader2 } from "lucide-react";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,7 @@ export default function Dashboard() {
 
   const { data: tasks = [], isLoading: loadingTasks } = useTasks(selectedCollectionId);
   const updateTaskMutation = useUpdateTask();
+  const deleteTaskMutation = useDeleteTask();
 
   const handleMobileClose = () => {
     setSelectedTaskId(null);
@@ -32,6 +33,10 @@ export default function Dashboard() {
 
   const handleUpdateTask = (id: string, updates: UpdateTaskDTO) => {
     updateTaskMutation.mutate({ id, dto: updates });
+  };
+
+  const handleDeleteTask = (id: string) => {
+    deleteTaskMutation.mutate(id);
   };
 
   const selectedTask = useMemo(() => 
@@ -85,6 +90,7 @@ export default function Dashboard() {
             collections={collections}
             onClose={handleMobileClose}
             onUpdate={handleUpdateTask}
+            onDelete={handleDeleteTask}
           />
         </div>
       )}
