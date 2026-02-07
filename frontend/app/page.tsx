@@ -7,23 +7,25 @@ import { RightPanel } from "@/components/dashboard/right-panel";
 import { CollectionModal } from "@/components/dashboard/collection-modal";
 import { useCollections } from "@/hooks/use-collections";
 import { useDeleteTask, useTasks, useUpdateTask } from "@/hooks/use-tasks";
-import { Loader2 } from "lucide-react";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { TaskDetails } from "@/components/dashboard/task-details";
 import { StatsDashboard } from "@/components/dashboard/stats-dashboard";
+import { useMe } from "@/hooks/use-auth";
 import { UpdateTaskDTO } from "@/types";
+import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
   const { activeNav, setActiveNav, selectedTaskId, setSelectedTaskId } = useDashboardStore();
 
-  const { data: collections = [], isLoading: loadingCollections } = useCollections();
+  const { data: user, isLoading: loadingUser } = useMe();
+  const { data: collections = [] } = useCollections();
 
   const selectedCollectionId = useMemo(() => {
     return activeNav.startsWith("collection-") ? activeNav.replace("collection-", "") : undefined;
   }, [activeNav]);
 
-  const { data: tasks = [], isLoading: loadingTasks } = useTasks(selectedCollectionId);
+  const { data: tasks = [] } = useTasks(selectedCollectionId);
   const updateTaskMutation = useUpdateTask();
   const deleteTaskMutation = useDeleteTask();
 
@@ -51,14 +53,15 @@ export default function Dashboard() {
     }
     return "Tasks";
   }, [activeNav, collections, selectedCollectionId]);
-
-  if (loadingCollections || loadingTasks) {
+  if (loadingUser) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     );
   }
+
+  if (!user) return null;
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
