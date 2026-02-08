@@ -89,6 +89,7 @@ export default function Dashboard() {
           "animate-in slide-in-from-right duration-300"
         )}>
           <TaskDetails
+            key={selectedTask.id}
             task={selectedTask}
             collections={collections}
             onClose={handleMobileClose}

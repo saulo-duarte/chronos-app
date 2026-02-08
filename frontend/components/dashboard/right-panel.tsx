@@ -56,6 +56,7 @@ export function RightPanel() {
     <aside className="flex h-screen w-80 flex-col border-l border-border bg-sidebar shrink-0 overflow-hidden relative">
       {selectedTask ? (
         <TaskDetails
+          key={selectedTask.id}
           task={selectedTask}
           collections={collections}
           onClose={() => setSelectedTaskId(null)}
