@@ -13,8 +13,9 @@ import {
   ChevronDown,
   ChevronRight,
   Menu,
+  FileText,
+  Brain,
 } from "lucide-react";
-
 import { useCollections } from "@/hooks/use-collections";
 import { CollectionItem } from "./collection-item";
 import { useCollectionModal } from "@/stores/use-collection-modal";
@@ -28,6 +29,8 @@ interface SidebarProps {
 const navItems = [
   { id: "tasks", label: "Tasks", icon: ListTodo },
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "notes", label: "Notes", icon: FileText },
+  { id: "mastery", label: "Mastery", icon: Brain },
 ];
 
 export function Sidebar({ activeNav, onNavChange }: SidebarProps) {

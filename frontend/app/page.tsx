@@ -13,6 +13,8 @@ import { TaskDetails } from "@/components/dashboard/task-details";
 import { StatsDashboard } from "@/components/dashboard/stats-dashboard";
 import { useMe } from "@/hooks/use-auth";
 import { UpdateTaskDTO } from "@/types";
+import { NotesFeature } from "@/components/notes/notes-feature";
+import { MasteryQueue } from "@/components/mastery/mastery-queue";
 import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
@@ -73,6 +75,10 @@ export default function Dashboard() {
       <main className="flex flex-1 overflow-hidden">
         {activeNav === "dashboard" ? (
           <StatsDashboard />
+        ) : activeNav === "notes" ? (
+          <NotesFeature />
+        ) : activeNav === "mastery" ? (
+          <MasteryQueue />
         ) : (
           <>
             <TaskList title={navTitle} />

@@ -81,8 +81,8 @@ export function ResourcesList({
   };
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 h-full">
-      <div className="border-b border-border px-6 py-4 space-y-4">
+    <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden">
+      <div className="border-b border-border px-6 py-4 space-y-4 shrink-0">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-foreground">Resources</h2>
@@ -132,7 +132,8 @@ export function ResourcesList({
         </div>
       </div>
 
-      <ScrollArea className="flex-1">
+      <div className="flex-1 min-h-0">
+        <ScrollArea className="h-full">
         <div className="p-6">
           {filteredResources.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -172,6 +173,7 @@ export function ResourcesList({
           )}
         </div>
       </ScrollArea>
+      </div>
 
       <AddResourceDialog
         open={isAddDialogOpen}
@@ -193,7 +195,7 @@ export function ResourcesList({
           <AlertDialogHeader>
             <AlertDialogTitle>Deletar Resource</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja deletar "{selectedResource?.title}"? Esta ação não pode ser desfeita.
+              Tem certeza que deseja deletar {`"${selectedResource?.title}"`}? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

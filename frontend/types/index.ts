@@ -94,3 +94,64 @@ export interface UpdateResourceDTO {
     tag?: string;
 }
 
+// LeetCode Mastery Types
+export type Pattern =
+    | "Sliding Window"
+    | "Two Pointers"
+    | "Fast & Slow Pointers"
+    | "Merge Intervals"
+    | "Cyclic Sort"
+    | "In-place Reversal"
+    | "BFS"
+    | "DFS"
+    | "Two Heaps"
+    | "Subsets"
+    | "Binary Search"
+    | "Top K Elements"
+    | "K-way Merge"
+    | "Backtracking"
+    | "Dynamic Programming"
+    | "Greedy"
+    | "Graphs"
+    | "Trie"
+    | "Topological Sort"
+    | "Union Find"
+    | "Monotonic Stack"
+    | "Bit Manipulation";
+
+export type Difficulty = "Easy" | "Medium" | "Hard";
+
+export interface LeetCodeProblem {
+    id: string;
+    title: string;
+    url: string;
+    pattern: Pattern;
+    difficulty: Difficulty;
+    last_score: number;
+    next_review: string;
+    ease_factor: number;
+    interval: number;
+    insight_note?: string;
+    created_at: string;
+}
+
+export interface CreateLeetCodeProblemDTO {
+    title: string;
+    url: string;
+    pattern: Pattern;
+    difficulty: Difficulty;
+    insight_note?: string;
+}
+
+export interface UpdateLeetCodeProblemDTO {
+    title?: string;
+    url?: string;
+    pattern?: Pattern;
+    difficulty?: Difficulty;
+    insight_note?: string;
+}
+
+export interface ReviewDTO {
+    score: number;
+    insight_note?: string;
+}
