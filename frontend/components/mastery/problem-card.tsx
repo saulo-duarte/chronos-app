@@ -1,10 +1,10 @@
 "use client";
 
-import { LeetCodeProblem, Difficulty, Pattern } from "@/types";
+import { LeetCodeProblem, Difficulty } from "@/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ExternalLink, Eye, CheckCircle2 } from "lucide-react";
+import { ExternalLink, Eye, CheckCircle2, Zap, Clock, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -14,115 +14,95 @@ interface ProblemCardProps {
 }
 
 const difficultyColors: Record<Difficulty, string> = {
-  Easy: "bg-green-500/10 text-green-500 border-green-500/20",
-  Medium: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-  Hard: "bg-red-500/10 text-red-500 border-red-500/20",
-};
-
-const patternColors: Record<Pattern, string> = {
-  "Sliding Window": "bg-blue-500/10 text-blue-400",
-  "Two Pointers": "bg-purple-500/10 text-purple-400",
-  "Fast & Slow Pointers": "bg-indigo-500/10 text-indigo-400",
-  "Merge Intervals": "bg-pink-500/10 text-pink-400",
-  "Cyclic Sort": "bg-cyan-500/10 text-cyan-400",
-  "In-place Reversal": "bg-teal-500/10 text-teal-400",
-  "BFS": "bg-emerald-500/10 text-emerald-400",
-  "DFS": "bg-lime-500/10 text-lime-400",
-  "Two Heaps": "bg-orange-500/10 text-orange-400",
-  "Subsets": "bg-amber-500/10 text-amber-400",
-  "Binary Search": "bg-rose-500/10 text-rose-400",
-  "Top K Elements": "bg-fuchsia-500/10 text-fuchsia-400",
-  "K-way Merge": "bg-violet-500/10 text-violet-400",
-  "Backtracking": "bg-sky-500/10 text-sky-400",
-  "Dynamic Programming": "bg-blue-600/10 text-blue-300",
-  "Greedy": "bg-green-600/10 text-green-300",
-  "Graphs": "bg-purple-600/10 text-purple-300",
-  "Trie": "bg-pink-600/10 text-pink-300",
-  "Topological Sort": "bg-indigo-600/10 text-indigo-300",
-  "Union Find": "bg-cyan-600/10 text-cyan-300",
-  "Monotonic Stack": "bg-teal-600/10 text-teal-300",
-  "Bit Manipulation": "bg-orange-600/10 text-orange-300",
+  Easy: "text-[#00af9b]",
+  Medium: "text-[#ffb800]",
+  Hard: "text-[#ff2d55]",
 };
 
 export function ProblemCard({ problem, onReview }: ProblemCardProps) {
   const [showInsight, setShowInsight] = useState(false);
 
-  const getScoreEmoji = (score: number) => {
-    if (score === 0) return "🆕";
-    if (score === 1) return "😰";
-    if (score === 2) return "😕";
-    if (score === 3) return "😐";
-    if (score === 4) return "😊";
-    if (score === 5) return "🎯";
-    return "❓";
+  const getScoreStatus = (score: number) => {
+    if (score >= 4) return { label: "Mastered", color: "bg-green-500/20 text-green-500" };
+    if (score >= 2) return { label: "Reviewing", color: "bg-yellow-500/20 text-yellow-500" };
+    return { label: "Learning", color: "bg-red-500/20 text-red-500" };
   };
 
+  const status = getScoreStatus(problem.last_score);
+
   return (
-    <Card className="p-4 hover:shadow-lg transition-all border-border/50 bg-card/80 backdrop-blur-sm">
-      <div className="space-y-3">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-base truncate">{problem.title}</h3>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge
-                variant="outline"
-                className={cn("text-xs font-medium", difficultyColors[problem.difficulty])}
-              >
+    <Card className="border-[#333] bg-[#282828] shadow-2xl overflow-hidden">
+      <div className="p-6 space-y-6">
+        <div className="flex items-start justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className={cn("text-xs font-bold tracking-wider uppercase", difficultyColors[problem.difficulty])}>
                 {problem.difficulty}
-              </Badge>
-              <span className="text-xl" title={`Last score: ${problem.last_score}`}>
-                {getScoreEmoji(problem.last_score)}
               </span>
+              <span className="text-gray-600">•</span>
+              <span className="text-xs text-gray-400 font-medium uppercase tracking-tight">{problem.pattern}</span>
             </div>
+            <h2 className="text-xl font-semibold text-white tracking-tight">{problem.title}</h2>
           </div>
           <a
             href={problem.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="p-2 bg-[#333] hover:bg-[#444] rounded-md transition-colors text-gray-400 hover:text-white"
           >
             <ExternalLink className="size-4" />
           </a>
         </div>
 
-        {/* Pattern Badge */}
-        <div>
-          <Badge className={cn("text-xs font-medium", patternColors[problem.pattern])}>
-            {problem.pattern}
-          </Badge>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-[#1a1a1a] p-3 rounded-lg border border-[#333]">
+            <div className="flex items-center gap-2 text-gray-500 mb-1">
+              <Clock className="size-3" />
+              <span className="text-[10px] uppercase font-bold">Interval</span>
+            </div>
+            <p className="text-sm font-semibold text-white">{problem.interval} days</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-3 rounded-lg border border-[#333]">
+            <div className="flex items-center gap-2 text-gray-500 mb-1">
+              <TrendingUp className="size-3" />
+              <span className="text-[10px] uppercase font-bold">Ease</span>
+            </div>
+            <p className="text-sm font-semibold text-white">{problem.ease_factor.toFixed(2)}</p>
+          </div>
+          <div className="bg-[#1a1a1a] p-3 rounded-lg border border-[#333]">
+            <div className="flex items-center gap-2 text-gray-500 mb-1">
+              <Zap className="size-3" />
+              <span className="text-[10px] uppercase font-bold">Status</span>
+            </div>
+            <Badge className={cn("text-[10px] border-none px-2 h-5", status.color)}>
+              {status.label}
+            </Badge>
+          </div>
         </div>
 
-        {/* Insight Section */}
         {problem.insight_note && (
-          <div className="space-y-2">
-            <Button
-              variant="ghost"
-              size="sm"
+          <div className="space-y-3">
+            <button
               onClick={() => setShowInsight(!showInsight)}
-              className="w-full justify-start gap-2 text-xs h-8"
+              className="flex items-center gap-2 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-wider"
             >
               <Eye className="size-3" />
-              {showInsight ? "Ocultar Sacada" : "Ver Sacada"}
-            </Button>
+              {showInsight ? "Hide Solution Insight" : "Show Solution Insight"}
+            </button>
             {showInsight && (
-              <div className="text-xs text-muted-foreground bg-muted/50 p-3 rounded-md border border-border/50">
+              <div className="text-sm leading-relaxed text-gray-300 bg-[#333] p-4 rounded-lg border-l-2 border-blue-500">
                 {problem.insight_note}
               </div>
             )}
           </div>
         )}
 
-        {/* Stats */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t border-border/50">
-          <span>Intervalo: {problem.interval}d</span>
-          <span>Ease: {problem.ease_factor.toFixed(2)}</span>
-        </div>
-
-        {/* Review Button */}
-        <Button onClick={onReview} className="w-full gap-2" size="sm">
+        <Button 
+          onClick={onReview} 
+          className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm gap-2"
+        >
           <CheckCircle2 className="size-4" />
-          Revisar Agora
+          Complete Review
         </Button>
       </div>
     </Card>
