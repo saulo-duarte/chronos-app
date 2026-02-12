@@ -9,8 +9,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { ProblemReviewCard } from "./problem-review-card";
 import { ReviewModal } from "./review-modal";
-import { CreateProblemModal } from "./create-problem-modal";
+import { useDeleteProblem } from "@/hooks/use-leetcode";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreVertical, Edit2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ProblemModal } from "./create-problem-modal";
 
 export function MasteryQueue() {
   const { data: dueProblems = [], isLoading: loadingDue } = useDueProblems();
@@ -22,7 +30,10 @@ export function MasteryQueue() {
   const [reviewQueue, setReviewQueue] = useState<LeetCodeProblem[]>([]);
   const [selectedProblem, setSelectedProblem] = useState<LeetCodeProblem | null>(null);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProblem, setEditingProblem] = useState<LeetCodeProblem | null>(null);
+
+  const deleteProblemMutation = useDeleteProblem();
 
   const sortedDueProblems = useMemo(() => {
     return [...dueProblems].sort((a, b) => {
@@ -127,7 +138,10 @@ export function MasteryQueue() {
 
           <div className="flex items-center gap-3">
             <Button 
-              onClick={() => setIsCreateOpen(true)} 
+              onClick={() => {
+                setEditingProblem(null);
+                setIsModalOpen(true);
+              }} 
               size="sm" 
               className="bg-[#333] hover:bg-[#404040] text-white border-none gap-2 h-8 px-4"
             >
@@ -205,7 +219,17 @@ export function MasteryQueue() {
                     <ProblemItem 
                       key={problem.id} 
                       problem={problem} 
+                      showActions={activeTab === "all"}
                       onReview={() => handleReviewSpecific(problem)} 
+                      onEdit={() => {
+                        setEditingProblem(problem);
+                        setIsModalOpen(true);
+                      }}
+                      onDelete={() => {
+                        if (confirm("Are you sure you want to delete this problem?")) {
+                          deleteProblemMutation.mutate(problem.id);
+                        }
+                      }}
                     />
                   ))}
                   
@@ -229,12 +253,31 @@ export function MasteryQueue() {
           onClose={handleCloseReview}
         />
       )}
-      <CreateProblemModal open={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
+      <ProblemModal
+        open={isModalOpen} 
+        problem={editingProblem}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditingProblem(null);
+        }} 
+      />
     </div>
   );
 }
 
-function ProblemItem({ problem, onReview }: { problem: LeetCodeProblem, onReview: () => void }) {
+function ProblemItem({ 
+  problem, 
+  onReview, 
+  onEdit, 
+  onDelete,
+  showActions 
+}: { 
+  problem: LeetCodeProblem; 
+  onReview: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  showActions?: boolean;
+}) {
   return (
     <div className="grid grid-cols-[1fr_120px_150px_120px] items-center px-6 py-3 hover:bg-[#333] transition-colors group">
       <div className="flex items-center gap-3 min-w-0">
@@ -268,15 +311,36 @@ function ProblemItem({ problem, onReview }: { problem: LeetCodeProblem, onReview
         </Badge>
       </div>
 
-      <div className="flex justify-end">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={onReview}
-          className="h-7 text-[12px] text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 px-3"
-        >
-          Review
-        </Button>
+      <div className="flex justify-end gap-2">
+        {showActions ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-white">
+                <MoreVertical className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-[#282828] border-[#333] text-[#eff1f6]">
+              <DropdownMenuItem onClick={onReview} className="gap-2 cursor-pointer focus:bg-[#333] focus:text-white">
+                <Play className="size-4" /> Review
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onEdit} className="gap-2 cursor-pointer focus:bg-[#333] focus:text-white">
+                <Edit2 className="size-4" /> Edit
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onDelete} className="gap-2 cursor-pointer focus:bg-red-500/10 focus:text-red-500">
+                <Trash2 className="size-4" /> Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onReview}
+            className="h-7 text-[12px] text-blue-400 hover:text-blue-300 hover:bg-blue-400/10 px-3"
+          >
+            Review
+          </Button>
+        )}
       </div>
     </div>
   );

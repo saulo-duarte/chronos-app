@@ -11,6 +11,7 @@ interface DashboardStore {
     selectedDate: Date;
     filterPriority: Priority | "ALL";
     filterStatus: Status | "ALL";
+    sidebarCollapsed: boolean;
     setActiveNav: (nav: string, view?: DashboardView) => void;
     setContentType: (type: "tasks" | "resources") => void;
     setSelectedTaskId: (id: string | null) => void;
@@ -18,6 +19,7 @@ interface DashboardStore {
     setSelectedDate: (date: Date) => void;
     setFilterPriority: (p: Priority | "ALL") => void;
     setFilterStatus: (s: Status | "ALL") => void;
+    setSidebarCollapsed: (collapsed: boolean) => void;
 }
 
 export const useDashboardStore = create<DashboardStore>((set) => ({
@@ -28,6 +30,7 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     selectedDate: new Date(),
     filterPriority: "ALL",
     filterStatus: "ALL",
+    sidebarCollapsed: false,
     setActiveNav: (nav, view) => set((state) => ({
         activeNav: nav,
         contentType: "tasks",
@@ -40,4 +43,5 @@ export const useDashboardStore = create<DashboardStore>((set) => ({
     setSelectedDate: (selectedDate) => set({ selectedDate }),
     setFilterPriority: (filterPriority) => set({ filterPriority }),
     setFilterStatus: (filterStatus) => set({ filterStatus }),
+    setSidebarCollapsed: (sidebarCollapsed) => set({ sidebarCollapsed }),
 }));

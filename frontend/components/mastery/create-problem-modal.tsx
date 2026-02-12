@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Pattern, Difficulty, CreateLeetCodeProblemDTO } from "@/types";
-import { useCreateProblem } from "@/hooks/use-leetcode";
+import { useState, useEffect } from "react";
+import { Pattern, Difficulty, CreateLeetCodeProblemDTO, LeetCodeProblem } from "@/types";
+import { useCreateProblem, useUpdateProblem } from "@/hooks/use-leetcode";
 import {
   Dialog,
   DialogContent,
@@ -20,12 +20,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Link2, Sparkles, Terminal, Layers } from "lucide-react";
+import { Link2, Sparkles, Terminal, Layers, Save } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface CreateProblemModalProps {
+interface ProblemModalProps {
   open: boolean;
   onClose: () => void;
+  problem?: LeetCodeProblem | null;
 }
 
 const patterns: Pattern[] = [
@@ -38,7 +39,7 @@ const patterns: Pattern[] = [
 
 const difficulties: Difficulty[] = ["Easy", "Medium", "Hard"];
 
-export function CreateProblemModal({ open, onClose }: CreateProblemModalProps) {
+export function ProblemModal({ open, onClose, problem }: ProblemModalProps) {
   const [formData, setFormData] = useState<CreateLeetCodeProblemDTO>({
     title: "",
     url: "",
@@ -48,34 +49,52 @@ export function CreateProblemModal({ open, onClose }: CreateProblemModalProps) {
   });
 
   const createMutation = useCreateProblem();
+  const updateMutation = useUpdateProblem();
+
+  useEffect(() => {
+    if (problem) {
+      setFormData({
+        title: problem.title,
+        url: problem.url,
+        pattern: problem.pattern,
+        difficulty: problem.difficulty,
+        insight_note: problem.insight_note || "",
+      });
+    } else {
+      setFormData({
+        title: "",
+        url: "",
+        pattern: "Sliding Window",
+        difficulty: "Medium",
+        insight_note: "",
+      });
+    }
+  }, [problem, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createMutation.mutateAsync({
+    const dto = {
       ...formData,
       insight_note: formData.insight_note?.trim() || undefined,
-    });
-    handleClose();
-  };
+    };
 
-  const handleClose = () => {
-    setFormData({
-      title: "",
-      url: "",
-      pattern: "Sliding Window",
-      difficulty: "Medium",
-      insight_note: "",
-    });
+    if (problem) {
+      await updateMutation.mutateAsync({ id: problem.id, dto });
+    } else {
+      await createMutation.mutateAsync(dto);
+    }
     onClose();
   };
 
+  const isPending = createMutation.isPending || updateMutation.isPending;
+
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-xl bg-[#282828] border-[#333] text-[#eff1f6] p-0 overflow-hidden">
         <DialogHeader className="p-6 bg-[#333]/30 border-b border-[#333]">
           <DialogTitle className="text-lg font-bold flex items-center gap-2">
-            <Terminal className="size-5 text-orange-500" />
-            New Challenge
+            {problem ? <Save className="size-5 text-blue-500" /> : <Terminal className="size-5 text-orange-500" />}
+            {problem ? "Edit Challenge" : "New Challenge"}
           </DialogTitle>
         </DialogHeader>
 
@@ -160,7 +179,9 @@ export function CreateProblemModal({ open, onClose }: CreateProblemModalProps) {
 
           <div className="space-y-2">
             <Label htmlFor="insight_note" className="text-[10px] uppercase font-bold text-gray-500 tracking-widest flex items-center gap-2">
-              <Sparkles className="size-3 text-orange-500" /> Key Insight
+              <span className="flex items-center gap-2">
+                <Sparkles className="size-3 text-orange-500" /> Key Insight
+              </span>
             </Label>
             <Textarea
               id="insight_note"
@@ -175,17 +196,22 @@ export function CreateProblemModal({ open, onClose }: CreateProblemModalProps) {
             <Button 
               type="button" 
               variant="ghost" 
-              onClick={handleClose}
+              onClick={onClose}
               className="text-gray-400 hover:text-white hover:bg-[#333]"
             >
               Cancel
             </Button>
             <Button 
               type="submit" 
-              disabled={createMutation.isPending}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
+              disabled={isPending}
+              className={cn(
+                "text-white",
+                problem ? "bg-blue-600 hover:bg-blue-700" : "bg-orange-500 hover:bg-orange-600"
+              )}
             >
-              {createMutation.isPending ? "Integrating..." : "Add to Library"}
+              {isPending 
+                ? (problem ? "Saving..." : "Integrating...") 
+                : (problem ? "Save Changes" : "Add to Library")}
             </Button>
           </div>
         </form>
