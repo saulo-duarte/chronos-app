@@ -26,6 +26,7 @@ func init() {
 		TaskHandler:       c.TaskHandler,
 		CollectionHandler: c.CollectionHandler,
 		ResourceHandler:   c.ResourceHandler,
+		LeetCodeHandler:   c.LeetCodeHandler,
 		JWTService:        c.JWTService,
 	})
 

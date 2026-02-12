@@ -7,6 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/saulo-duarte/chronos/internal/auth"
 	"github.com/saulo-duarte/chronos/internal/collections"
+	"github.com/saulo-duarte/chronos/internal/leetcode"
 	"github.com/saulo-duarte/chronos/internal/resources"
 	sharedauth "github.com/saulo-duarte/chronos/internal/shared/auth"
 	"github.com/saulo-duarte/chronos/internal/shared/config"
@@ -24,6 +25,7 @@ type Container struct {
 	TaskHandler       *tasks.Handler
 	CollectionHandler *collections.Handler
 	ResourceHandler   *resources.Handler
+	LeetCodeHandler   *leetcode.Handler
 	JWTService        *sharedauth.TokenService
 }
 
@@ -66,6 +68,10 @@ func New() *Container {
 		log.Fatalf("Falha ao migrar Resource: %v", err)
 	}
 
+	if err := db.AutoMigrate(&leetcode.LeetCodeProblem{}); err != nil {
+		log.Fatalf("Falha ao migrar LeetCodeProblem: %v", err)
+	}
+
 	jwtSvc := sharedauth.NewTokenService(cfg.JWTSecret)
 	storageSvc := storage.NewClient(
 		cfg.StorageURL,
@@ -78,6 +84,7 @@ func New() *Container {
 	tasksContainer := tasks.NewContainer(db)
 	collectionsContainer := collections.NewContainer(db)
 	resourcesContainer := resources.NewContainer(db, storageSvc)
+	leetcodeContainer := leetcode.NewContainer(db)
 
 	return &Container{
 		Config:            cfg,
@@ -87,6 +94,7 @@ func New() *Container {
 		TaskHandler:       tasksContainer.Handler,
 		CollectionHandler: collectionsContainer.Handler,
 		ResourceHandler:   resourcesContainer.Handler,
+		LeetCodeHandler:   leetcodeContainer.Handler,
 		JWTService:        jwtSvc,
 	}
 }

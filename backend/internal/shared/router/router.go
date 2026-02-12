@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/saulo-duarte/chronos/internal/auth"
 	"github.com/saulo-duarte/chronos/internal/collections"
+	"github.com/saulo-duarte/chronos/internal/leetcode"
 	"github.com/saulo-duarte/chronos/internal/resources"
 	sharedauth "github.com/saulo-duarte/chronos/internal/shared/auth"
 	"github.com/saulo-duarte/chronos/internal/shared/middlewares"
@@ -20,6 +21,7 @@ type RouterConfig struct {
 	TaskHandler       *tasks.Handler
 	CollectionHandler *collections.Handler
 	ResourceHandler   *resources.Handler
+	LeetCodeHandler   *leetcode.Handler
 	JWTService        *sharedauth.TokenService
 }
 
@@ -77,6 +79,17 @@ func New(cfg RouterConfig) *chi.Mux {
 			r.Get("/{id}", cfg.ResourceHandler.GetByID)
 			r.Put("/{id}", cfg.ResourceHandler.Update)
 			r.Delete("/{id}", cfg.ResourceHandler.Delete)
+		})
+
+		r.Route("/leetcode", func(r chi.Router) {
+			r.Use(middlewares.Auth(cfg.JWTService))
+			r.Post("/", cfg.LeetCodeHandler.Create)
+			r.Get("/", cfg.LeetCodeHandler.GetAll)
+			r.Get("/due", cfg.LeetCodeHandler.GetDue)
+			r.Get("/{id}", cfg.LeetCodeHandler.GetByID)
+			r.Put("/{id}", cfg.LeetCodeHandler.Update)
+			r.Post("/{id}/review", cfg.LeetCodeHandler.Review)
+			r.Delete("/{id}", cfg.LeetCodeHandler.Delete)
 		})
 	})
 
