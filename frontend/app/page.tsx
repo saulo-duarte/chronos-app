@@ -2,6 +2,8 @@
 
 import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { Sidebar } from "@/components/dashboard/sidebar";
+import { MobileBottomNav } from "@/components/dashboard/mobile-bottom-nav";
+import { MobileFilters } from "@/components/dashboard/mobile-filters";
 import { TaskList } from "@/components/dashboard/task-list";
 import { RightPanel } from "@/components/dashboard/right-panel";
 import { CollectionModal } from "@/components/dashboard/collection-modal";
@@ -17,13 +19,16 @@ import { MasteryQueue } from "@/components/mastery/mastery-queue";
 import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
-  const { activeNav, setActiveNav, selectedTaskId, setSelectedTaskId } = useDashboardStore();
+  const { activeNav, setActiveNav, selectedTaskId, setSelectedTaskId } =
+    useDashboardStore();
 
   const { data: user, isLoading: loadingUser } = useMe();
   const { data: collections = [] } = useCollections();
 
   const selectedCollectionId = useMemo(() => {
-    return activeNav.startsWith("collection-") ? activeNav.replace("collection-", "") : undefined;
+    return activeNav.startsWith("collection-")
+      ? activeNav.replace("collection-", "")
+      : undefined;
   }, [activeNav]);
 
   const { data: tasks = [] } = useTasks(selectedCollectionId);
@@ -42,15 +47,19 @@ export default function Dashboard() {
     deleteTaskMutation.mutate(id);
   };
 
-  const selectedTask = useMemo(() => 
-    tasks.find(t => t.id === selectedTaskId) || null
-  , [tasks, selectedTaskId]);
+  const selectedTask = useMemo(
+    () => tasks.find((t) => t.id === selectedTaskId) || null,
+    [tasks, selectedTaskId],
+  );
 
   const navTitle = useMemo(() => {
     if (activeNav === "dashboard") return "Dashboard";
     if (activeNav === "tasks") return "Tasks";
     if (selectedCollectionId) {
-      return collections.find(c => c.id === selectedCollectionId)?.title || "Collection";
+      return (
+        collections.find((c) => c.id === selectedCollectionId)?.title ||
+        "Collection"
+      );
     }
     return "Tasks";
   }, [activeNav, collections, selectedCollectionId]);
@@ -66,11 +75,8 @@ export default function Dashboard() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <Sidebar
-        activeNav={activeNav}
-        onNavChange={setActiveNav}
-      />
-      
+      <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
+
       <main className="flex flex-1 overflow-hidden">
         {activeNav === "dashboard" ? (
           <StatsDashboard />
@@ -87,10 +93,12 @@ export default function Dashboard() {
       </main>
 
       {selectedTask && (
-        <div className={cn(
-          "fixed inset-0 z-50 bg-background xl:hidden",
-          "animate-in slide-in-from-right duration-300"
-        )}>
+        <div
+          className={cn(
+            "fixed inset-0 z-50 bg-background xl:hidden",
+            "animate-in slide-in-from-right duration-300",
+          )}
+        >
           <TaskDetails
             key={selectedTask.id}
             task={selectedTask}
@@ -103,6 +111,8 @@ export default function Dashboard() {
       )}
 
       <CollectionModal />
+      <MobileFilters />
+      <MobileBottomNav />
     </div>
   );
 }
