@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { LayoutDashboard, ListTodo, Brain, Layers } from "lucide-react";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { cn } from "@/lib/utils";
@@ -15,24 +14,23 @@ const navItems = [
 ];
 
 export function MobileBottomNav() {
-  const { activeNav, setActiveNav } = useDashboardStore();
-  const [showPicker, setShowPicker] = useState(false);
+  const { activeNav, setActiveNav, isPickerOpen, setIsPickerOpen } =
+    useDashboardStore();
 
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-background/80 backdrop-blur-xl border-t border-border/50 px-6 pb-6 pt-3">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-primary/95 backdrop-blur-xl border-t border-border/50 px-6 pb-2 pt-3 transition-colors duration-500">
         <div className="flex items-center justify-between max-w-md mx-auto">
           {navItems.map((item) => {
             const isCollections = item.id === "collections";
             const isHome = item.id === "tasks";
 
-            // Ativo se for o item clicado OU se for Home e uma collection estiver selecionada
             const isActive = isCollections
-              ? showPicker
+              ? isPickerOpen
               : isHome
                 ? (activeNav === "tasks" ||
                     activeNav.startsWith("collection-")) &&
-                  !showPicker
+                  !isPickerOpen
                 : activeNav === item.id;
 
             return (
@@ -42,17 +40,17 @@ export function MobileBottomNav() {
                   if (isSelected(item.id, activeNav) && !isCollections) return;
 
                   if (isCollections) {
-                    setShowPicker(!showPicker);
+                    setIsPickerOpen(!isPickerOpen);
                   } else {
                     setActiveNav(item.id);
-                    setShowPicker(false);
+                    setIsPickerOpen(false);
                   }
                 }}
                 className={cn(
                   "flex flex-col items-center gap-1.5 transition-all duration-300 relative px-4 py-1 rounded-xl",
                   isActive
-                    ? "text-primary active-tab"
-                    : "text-muted-foreground hover:text-foreground",
+                    ? "text-gray-200 active-tab"
+                    : "text-gray-400 hover:text-white",
                 )}
               >
                 <item.icon className={cn("size-6", isActive && "scale-110")} />
@@ -60,7 +58,7 @@ export function MobileBottomNav() {
                   {item.label}
                 </span>
                 {isActive && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary rounded-full" />
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-1 bg-white rounded-full" />
                 )}
               </button>
             );
@@ -68,13 +66,14 @@ export function MobileBottomNav() {
         </div>
       </nav>
 
-      <Sheet open={showPicker} onOpenChange={setShowPicker}>
+      <Sheet open={isPickerOpen} onOpenChange={setIsPickerOpen}>
         <SheetContent
           side="bottom"
-          className="h-[100dvh] p-0 border-t-0 bg-background/40 backdrop-blur-2xl shadow-none flex flex-col justify-center transition-all duration-700"
+          className="h-[100dvh] p-0 border-t-0 bg-background shadow-none flex flex-col justify-center transition-all duration-700"
+          onInteractOutside={(e) => e.preventDefault()}
         >
           <div
-            onClick={() => setShowPicker(false)}
+            onClick={() => setIsPickerOpen(false)}
             className="flex-1 flex items-center justify-center"
           >
             <MobileCollectionPicker />

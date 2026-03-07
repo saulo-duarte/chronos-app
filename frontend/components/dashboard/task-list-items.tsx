@@ -1,0 +1,121 @@
+"use client";
+
+import { format, parseISO, startOfWeek, subWeeks, addWeeks } from "date-fns";
+import {
+  ChevronLeft,
+  ChevronRight,
+  AlertCircle,
+  ListChecks,
+} from "lucide-react";
+import { Task, Collection, Priority, Status } from "@/types";
+import { useDashboardStore } from "@/stores/use-dashboard-store";
+import { Button } from "@/components/ui/button";
+import { TaskCard } from "./task-card";
+import { QuickAdd } from "./quick-add";
+
+interface TaskListItemsProps {
+  tasks: Task[];
+  groups: Record<string, Task[]>;
+  collections: Collection[];
+  onToggleComplete: (id: string, status: Status) => void;
+  onAddTask: (title: string, priority: Priority, date?: Date) => void;
+}
+
+export function TaskListItems({
+  groups,
+  collections,
+  onToggleComplete,
+  onAddTask,
+}: TaskListItemsProps) {
+  const {
+    view,
+    selectedDate,
+    setSelectedDate,
+    selectedTaskId,
+    setSelectedTaskId,
+  } = useDashboardStore();
+  const keys = Object.keys(groups).sort();
+
+  return (
+    <div className="p-4 md:p-6 max-w-5xl mx-auto w-full">
+      {view === "week" && (
+        <div className="md:hidden flex items-center justify-between mb-4 px-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full size-8"
+            onClick={() => setSelectedDate(subWeeks(selectedDate, 1))}
+          >
+            <ChevronLeft className="size-5" />
+          </Button>
+          <span className="text-sm font-medium">
+            {format(startOfWeek(selectedDate), "EEEE, MMM dd")}
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full size-8"
+            onClick={() => setSelectedDate(addWeeks(selectedDate, 1))}
+          >
+            <ChevronRight className="size-5" />
+          </Button>
+        </div>
+      )}
+
+      <div className="hidden md:block mb-8">
+        <QuickAdd onAddTask={onAddTask} />
+      </div>
+
+      <div className="space-y-8">
+        {keys.length > 0 ? (
+          keys.map((dateKey) => (
+            <div key={dateKey} className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="h-[1px] flex-1 bg-border/60" />
+                <span className="text-xs font-bold uppercase tracking-wider text-primary/85 whitespace-nowrap">
+                  {dateKey === "No Date"
+                    ? dateKey
+                    : format(parseISO(dateKey), "EEEE, MMM dd")}
+                </span>
+                <div className="h-[1px] flex-1 bg-border/60" />
+              </div>
+              <div className="grid gap-3">
+                {groups[dateKey].map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    collection={collections.find(
+                      (c) => c.id === task.collection_id,
+                    )}
+                    onToggleComplete={onToggleComplete}
+                    onEdit={() => setSelectedTaskId(task.id)}
+                    isActive={selectedTaskId === task.id}
+                  />
+                ))}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in duration-500">
+            <div className="flex size-16 items-center justify-center rounded-full bg-muted/50 mb-4">
+              {view === "overdue" ? (
+                <AlertCircle className="size-8 text-emerald-500/70" />
+              ) : (
+                <ListChecks className="size-8 text-muted-foreground/50" />
+              )}
+            </div>
+            <h3 className="text-base font-semibold text-foreground">
+              {view === "today"
+                ? "No tasks for today"
+                : view === "week"
+                  ? "No tasks this week"
+                  : view === "overdue"
+                    ? "All caught up!"
+                    : "No tasks found"}
+            </h3>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

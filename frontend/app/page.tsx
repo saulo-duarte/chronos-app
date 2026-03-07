@@ -16,7 +16,6 @@ import { StatsDashboard } from "@/components/dashboard/stats-dashboard";
 import { useMe } from "@/hooks/use-auth";
 import { UpdateTaskDTO } from "@/types";
 import { MasteryQueue } from "@/components/mastery/mastery-queue";
-import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
   const { activeNav, setActiveNav, selectedTaskId, setSelectedTaskId } =
@@ -63,18 +62,11 @@ export default function Dashboard() {
     }
     return "Tasks";
   }, [activeNav, collections, selectedCollectionId]);
-  if (loadingUser) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <Loader2 className="size-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
-  if (!user) return null;
+  if (!user && !loadingUser) return null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden bg-modern-gradient">
       <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
 
       <main className="flex flex-1 overflow-hidden">

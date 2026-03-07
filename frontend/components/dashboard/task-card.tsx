@@ -28,16 +28,24 @@ const priorityLabels: Record<string, string> = {
   HIGH: "High",
 };
 
-export function TaskCard({ task, collection, onToggleComplete, onEdit, isActive }: TaskCardProps) {
+export function TaskCard({
+  task,
+  collection,
+  onToggleComplete,
+  onEdit,
+  isActive,
+}: TaskCardProps) {
   const isCompleted = task.status === "DONE";
-  
-  // Date Logic
+
   const endDate = task.end_time ? new Date(task.end_time) : null;
   const finishedDate = task.finished_at ? new Date(task.finished_at) : null;
-  
+
   const isOverdue = endDate && new Date() > endDate && !isCompleted;
-  // Near deadline if within 24 hours
-  const isNearDeadline = endDate && new Date() < endDate && (endDate.getTime() - new Date().getTime()) < 24 * 60 * 60 * 1000 && !isCompleted;
+  const isNearDeadline =
+    endDate &&
+    new Date() < endDate &&
+    endDate.getTime() - new Date().getTime() < 24 * 60 * 60 * 1000 &&
+    !isCompleted;
 
   const formatDate = (date: Date) => {
     // If today, show time Only? Or "Today, hh:mm"
@@ -48,21 +56,22 @@ export function TaskCard({ task, collection, onToggleComplete, onEdit, isActive 
   return (
     <div
       className={cn(
-        "group flex items-start gap-3 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/20 hover:shadow-sm cursor-pointer",
-        isCompleted && "opacity-60",
-        isOverdue && "border-red-200 bg-red-50/50 dark:bg-red-900/10",
-        isNearDeadline && "border-amber-200 bg-amber-50/50 dark:bg-amber-900/10",
-        isActive && "border-primary/40 ring-1 ring-primary/40 bg-accent/30"
+        "group flex items-start gap-4 rounded-2xl border border-border/50 bg-card/60 backdrop-blur-sm p-5 transition-all duration-300 hover:border-primary/30 hover:shadow-xl hover:-translate-y-1 cursor-pointer",
+        isCompleted && "opacity-60 grayscale-[0.5]",
+        isOverdue && "border-red-200/50 bg-red-50/30 dark:bg-red-900/10",
+        isNearDeadline &&
+          "border-amber-200/50 bg-amber-50/30 dark:bg-amber-900/10",
+        isActive && "border-primary/50 ring-2 ring-primary/20 bg-primary/5",
       )}
       onClick={onEdit}
     >
       <div onClick={(e) => e.stopPropagation()} className="flex">
         <Checkbox
-            checked={isCompleted}
-            onCheckedChange={(checked) => 
-              onToggleComplete(task.id, checked ? "DONE" : "PENDING")
-            }
-            className="mt-0.5 size-5 rounded-full"
+          checked={isCompleted}
+          onCheckedChange={(checked) =>
+            onToggleComplete(task.id, checked ? "DONE" : "PENDING")
+          }
+          className="mt-0.5 size-5 rounded-full"
         />
       </div>
 
@@ -71,8 +80,10 @@ export function TaskCard({ task, collection, onToggleComplete, onEdit, isActive 
           className={cn(
             "text-sm font-medium text-foreground transition-all",
             isCompleted && "line-through text-muted-foreground",
-             isOverdue && !isCompleted && "text-red-700 dark:text-red-400",
-             isNearDeadline && !isCompleted && "text-amber-700 dark:text-amber-400"
+            isOverdue && !isCompleted && "text-red-700 dark:text-red-400",
+            isNearDeadline &&
+              !isCompleted &&
+              "text-amber-700 dark:text-amber-400",
           )}
         >
           {task.title}
@@ -81,7 +92,10 @@ export function TaskCard({ task, collection, onToggleComplete, onEdit, isActive 
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Badge
             variant="outline"
-            className={cn("text-[10px] px-1.5 py-0", priorityStyles[task.priority])}
+            className={cn(
+              "text-[10px] px-1.5 py-0",
+              priorityStyles[task.priority],
+            )}
           >
             {priorityLabels[task.priority]}
           </Badge>
@@ -103,18 +117,23 @@ export function TaskCard({ task, collection, onToggleComplete, onEdit, isActive 
           )}
 
           {endDate && !isCompleted && (
-            <span className={cn(
+            <span
+              className={cn(
                 "inline-flex items-center gap-1 text-[10px]",
-                isOverdue ? "text-red-600 font-medium" : 
-                isNearDeadline ? "text-amber-600 font-medium" : "text-muted-foreground"
-            )}>
+                isOverdue
+                  ? "text-red-600 font-medium"
+                  : isNearDeadline
+                    ? "text-amber-600 font-medium"
+                    : "text-muted-foreground",
+              )}
+            >
               <Clock className="size-3" />
               {isOverdue ? "Overdue: " : "Due: "}
               {formatDate(endDate)}
             </span>
           )}
 
-           {finishedDate && isCompleted && (
+          {finishedDate && isCompleted && (
             <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
               <CheckCircle2 className="size-3" />
               Finished: {formatDate(finishedDate)}

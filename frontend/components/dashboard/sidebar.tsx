@@ -32,7 +32,7 @@ const navItems = [
 ];
 
 export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
-  const { data: collections = [] } = useCollections();
+  const { data: collections = [], isLoading } = useCollections();
   const { onOpen } = useCollectionModal();
   const { sidebarCollapsed, setSidebarCollapsed } = useDashboardStore();
   const [collectionsExpanded, setCollectionsExpanded] = useState(true);
@@ -42,7 +42,7 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
   };
 
   const SidebarContent = (isCollapsedDesktop?: boolean) => (
-    <div className="flex h-full flex-col bg-sidebar">
+    <div className="flex h-full flex-col bg-transparent">
       <div
         className={cn(
           "flex items-center gap-2 border-b border-border px-4 py-5",
@@ -72,8 +72,8 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
                 className={cn(
                   "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all",
                   isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                    : "text-muted-foreground hover:bg-primary/5 hover:text-primary",
                   isCollapsedDesktop && "justify-center px-0",
                 )}
               >
@@ -102,17 +102,25 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
 
             {collectionsExpanded && (
               <div className="mt-1 space-y-1">
-                {collections.map((collection) => (
-                  <CollectionItem
-                    key={collection.id}
-                    collection={collection}
-                    isActive={activeNav === `collection-${collection.id}`}
-                    onClick={() =>
-                      handleNavClick(`collection-${collection.id}`)
-                    }
-                    onEdit={(c) => onOpen(c)}
-                  />
-                ))}
+                {isLoading ? (
+                  <div className="space-y-2 p-3">
+                    <div className="h-4 w-3/4 rounded bg-muted/20 animate-pulse" />
+                    <div className="h-4 w-1/2 rounded bg-muted/20 animate-pulse" />
+                    <div className="h-4 w-2/3 rounded bg-muted/20 animate-pulse" />
+                  </div>
+                ) : (
+                  collections.map((collection) => (
+                    <CollectionItem
+                      key={collection.id}
+                      collection={collection}
+                      isActive={activeNav === `collection-${collection.id}`}
+                      onClick={() =>
+                        handleNavClick(`collection-${collection.id}`)
+                      }
+                      onEdit={(c) => onOpen(c)}
+                    />
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -121,7 +129,7 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
 
       <div
         className={cn(
-          "p-3 border-t border-border/50",
+          "p-4 border-t border-border/40 backdrop-blur-md",
           isCollapsedDesktop && "px-0 flex flex-col items-center",
         )}
       >
@@ -167,8 +175,8 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
     <>
       <aside
         className={cn(
-          "hidden h-full flex-col border-r border-border bg-sidebar lg:flex transition-all duration-300",
-          sidebarCollapsed ? "w-16" : "w-64",
+          "hidden h-full flex-col glass-sidebar lg:flex transition-all duration-500 ease-in-out",
+          sidebarCollapsed ? "w-20" : "w-72",
         )}
       >
         {SidebarContent(sidebarCollapsed)}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Plus, Flag, Calendar as CalendarIcon } from "lucide-react";
 import { Priority } from "@/types";
+import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,20 +24,37 @@ import { cn } from "@/lib/utils";
 
 interface MobileAddTaskProps {
   onAddTask: (title: string, priority: Priority, date?: Date) => void;
+  onAddResource?: (title: string, url: string) => void;
 }
 
-export function MobileAddTask({ onAddTask }: MobileAddTaskProps) {
+export function MobileAddTask({
+  onAddTask,
+  onAddResource,
+}: MobileAddTaskProps) {
+  const { isPickerOpen, contentType } = useDashboardStore();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
+  const [url, setUrl] = useState("");
   const [priority, setPriority] = useState<Priority>("MEDIUM");
   const [date, setDate] = useState("");
 
-  const handleSubmit = () => {
+  const isResourceMode = contentType === "resources" && !isPickerOpen;
+
+  const handleSubmit = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!title.trim()) return;
-    onAddTask(title.trim(), priority, date ? new Date(date) : undefined);
+
+    if (isResourceMode && onAddResource) {
+      if (!url.trim()) return;
+      onAddResource(title.trim(), url.trim());
+      setUrl("");
+    } else {
+      onAddTask(title.trim(), priority, date ? new Date(date) : undefined);
+      setPriority("MEDIUM");
+      setDate("");
+    }
+
     setTitle("");
-    setPriority("MEDIUM");
-    setDate("");
     setOpen(false);
   };
 
@@ -47,83 +65,129 @@ export function MobileAddTask({ onAddTask }: MobileAddTaskProps) {
   };
 
   return (
-    <div className="md:hidden fixed bottom-24 right-6 z-[70]">
+    <div className="md:hidden fixed bottom-32 right-6 z-[80]">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
           <Button
             size="icon"
-            className="size-16 rounded-full shadow-xl shadow-primary/20 hover:shadow-2xl hover:shadow-primary/40 transition-all bg-primary text-primary-foreground ring-4 ring-primary/20"
+            className={cn(
+              "size-14 rounded-full shadow-xl transition-all ring-4 outline-none",
+              isPickerOpen
+                ? "bg-primary text-primary-foreground ring-primary/30 glow-primary scale-110"
+                : "bg-primary text-primary-foreground ring-primary/20 shadow-primary/20",
+            )}
+            onClick={(e) => e.stopPropagation()}
           >
-            <Plus className="size-8" />
+            <Plus
+              className={cn(
+                "size-8 transition-transform duration-500",
+                isPickerOpen && "rotate-90",
+              )}
+            />
           </Button>
         </SheetTrigger>
         <SheetContent
           side="bottom"
-          className="rounded-t-[32px] p-6 pb-12 min-h-[50vh] max-h-[90vh] flex flex-col gap-6 bg-background border-t-0 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] transition-transform duration-500 ease-out"
+          className="rounded-t-[32px] p-6 pb-12 min-h-[40vh] max-h-[90vh] flex flex-col gap-6 bg-background border-t-0 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-[100] transition-transform duration-500 ease-out"
+          onPointerDownOutside={(e) => e.preventDefault()}
         >
           <SheetHeader>
-            <SheetTitle>Nova Task</SheetTitle>
+            <SheetTitle>
+              {isPickerOpen
+                ? "Nova Coleção"
+                : isResourceMode
+                  ? "Novo Recurso"
+                  : "Nova Task"}
+            </SheetTitle>
           </SheetHeader>
 
           <div className="flex flex-col gap-6">
             <div className="space-y-2">
               <label className="text-sm font-medium">
-                O que precisa ser feito?
+                {isPickerOpen
+                  ? "Nome da coleção"
+                  : isResourceMode
+                    ? "Nome do recurso"
+                    : "O que precisa ser feito?"}
               </label>
               <Input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ex: Finalizar planejamento"
+                placeholder={
+                  isPickerOpen
+                    ? "Ex: Trabalho, Estudo..."
+                    : isResourceMode
+                      ? "Ex: Guia do Projeto"
+                      : "Ex: Finalizar planejamento"
+                }
                 className="h-12 text-base"
                 autoFocus={false}
               />
             </div>
 
-            <div className="flex gap-4">
-              <div className="space-y-2 flex-1">
-                <label className="text-sm font-medium">Prioridade</label>
-                <Select
-                  value={priority}
-                  onValueChange={(v) => setPriority(v as Priority)}
-                >
-                  <SelectTrigger className="h-12">
-                    <div className="flex items-center gap-2">
-                      <Flag
-                        className={cn("size-4", priorityColors[priority])}
-                      />
-                      <SelectValue />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="LOW">Low</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="HIGH">High</SelectItem>
-                  </SelectContent>
-                </Select>
+            {isResourceMode && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Link (URL)</label>
+                <Input
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="h-12 text-base"
+                />
               </div>
+            )}
 
-              <div className="space-y-2 flex-1">
-                <label className="text-sm font-medium">
-                  Data/Hora (Opcional)
-                </label>
-                <div className="relative">
-                  <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                  <Input
-                    type="datetime-local"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="h-12 pl-9 w-full"
-                  />
+            {!isPickerOpen && !isResourceMode && (
+              <div className="flex gap-4">
+                <div className="space-y-2 flex-1">
+                  <label className="text-sm font-medium">Prioridade</label>
+                  <Select
+                    value={priority}
+                    onValueChange={(v) => setPriority(v as Priority)}
+                  >
+                    <SelectTrigger className="h-12 w-full">
+                      <div className="flex items-center gap-2">
+                        <Flag
+                          className={cn("size-4", priorityColors[priority])}
+                        />
+                        <SelectValue />
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="LOW">Low</SelectItem>
+                      <SelectItem value="MEDIUM">Medium</SelectItem>
+                      <SelectItem value="HIGH">High</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2 flex-1">
+                  <label className="text-sm font-medium">
+                    Data/Hora (Opcional)
+                  </label>
+                  <div className="relative">
+                    <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                    <Input
+                      type="datetime-local"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="h-12 pl-9 w-full"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <Button
               onClick={handleSubmit}
-              disabled={!title.trim()}
+              disabled={!title.trim() || (isResourceMode && !url.trim())}
               className="w-full h-12 text-base mt-4"
             >
-              Criar Task
+              {isPickerOpen
+                ? "Criar Coleção"
+                : isResourceMode
+                  ? "Salvar Recurso"
+                  : "Criar Task"}
             </Button>
           </div>
         </SheetContent>

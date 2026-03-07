@@ -29,7 +29,7 @@ export function QuickAdd({ onAddTask }: QuickAddProps) {
       onAddTask(
         value.trim(),
         priority,
-        startTime ? new Date(startTime) : undefined
+        startTime ? new Date(startTime) : undefined,
       );
       setValue("");
       setPriority("MEDIUM");
@@ -57,20 +57,25 @@ export function QuickAdd({ onAddTask }: QuickAddProps) {
   return (
     <div
       className={cn(
-        "group flex flex-col gap-3 rounded-xl border transition-all duration-200",
-        isExpanded 
-          ? "border-primary/50 bg-card shadow-sm p-4" 
-          : "border-transparent bg-muted/30 p-2 hover:bg-muted/50"
+        "group flex flex-col gap-3 rounded-2xl border transition-all duration-300",
+        isExpanded
+          ? "border-primary/40 bg-card/60 backdrop-blur-md shadow-2xl p-6"
+          : "border-border/50 bg-muted/20 backdrop-blur-sm p-4 hover:bg-muted/40 hover:border-primary/20 shadow-lg",
       )}
     >
       <div className="flex items-center gap-3">
-        <div 
+        <div
           className={cn(
             "flex size-8 shrink-0 items-center justify-center rounded-full transition-colors",
-            isExpanded ? "bg-primary/10" : "bg-transparent"
+            isExpanded ? "bg-primary/10" : "bg-transparent",
           )}
         >
-          <Plus className={cn("size-5", isExpanded ? "text-primary" : "text-muted-foreground")} />
+          <Plus
+            className={cn(
+              "size-5",
+              isExpanded ? "text-primary" : "text-muted-foreground",
+            )}
+          />
         </div>
 
         <input
@@ -85,10 +90,10 @@ export function QuickAdd({ onAddTask }: QuickAddProps) {
         />
 
         {isExpanded && (
-          <Button 
-            size="icon" 
-            variant="ghost" 
-            onClick={handleSubmit} 
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={handleSubmit}
             disabled={!value.trim()}
             className="size-8 rounded-full text-primary hover:bg-primary/10"
           >
@@ -126,15 +131,15 @@ export function QuickAdd({ onAddTask }: QuickAddProps) {
                 onChange={(e) => setStartTime(e.target.value)}
                 className={cn(
                   "h-8 w-[40px] rounded-md bg-muted/50 pl-8 text-[10px] outline-none transition-all hover:bg-muted md:w-[180px] md:text-xs",
-                  startTime ? "w-[140px] md:w-[180px]" : "md:w-[130px]"
+                  startTime ? "w-[140px] md:w-[180px]" : "md:w-[130px]",
                 )}
               />
             </div>
           </div>
 
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setIsExpanded(false)}
             className="size-7 rounded-full text-muted-foreground"
           >

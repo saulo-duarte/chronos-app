@@ -19,8 +19,18 @@ interface AddResourceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   collectionId: string;
-  onAddFile: (file: File, title: string, description: string, tag: string) => void;
-  onAddLink: (url: string, title: string, description: string, tag: string) => void;
+  onAddFile: (
+    file: File,
+    title: string,
+    description: string,
+    tag: string,
+  ) => void;
+  onAddLink: (
+    url: string,
+    title: string,
+    description: string,
+    tag: string,
+  ) => void;
 }
 
 export function AddResourceDialog({
@@ -64,7 +74,7 @@ export function AddResourceDialog({
   };
 
   const isValid = type === "FILE" ? !!file : !!url && !!title;
-  
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
@@ -87,7 +97,10 @@ export function AddResourceDialog({
 
             <div className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label htmlFor="resource-tag" className="flex items-center gap-2">
+                <Label
+                  htmlFor="resource-tag"
+                  className="flex items-center gap-2"
+                >
                   <TagIcon className="size-3" /> Tag (opcional)
                 </Label>
                 <Input
@@ -174,16 +187,13 @@ export function AddResourceDialog({
             </div>
           </Tabs>
 
-          <DialogFooter className="pt-4">
+          <DialogFooter className="pt-6 sm:pt-4">
             <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
+              type="submit"
+              disabled={!isValid}
+              className="w-full h-12 text-base shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 active:scale-95"
             >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={!isValid}>
-              Adicionar
+              Adicionar Resource
             </Button>
           </DialogFooter>
         </form>
