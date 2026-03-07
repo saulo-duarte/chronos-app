@@ -87,7 +87,7 @@ export default function Dashboard() {
       {selectedTask && (
         <div
           className={cn(
-            "fixed inset-0 z-50 bg-background xl:hidden",
+            "fixed inset-0 z-[70] bg-background xl:hidden",
             "animate-in slide-in-from-right duration-300",
           )}
         >
