@@ -111,6 +111,9 @@ func (s *service) Update(ctx context.Context, id uuid.UUID, dto *UpdateResourceD
 	if dto.Tag != nil {
 		resource.Tag = dto.Tag
 	}
+	if dto.Path != nil {
+		resource.Path = *dto.Path
+	}
 
 	if err := s.repository.Update(ctx, resource); err != nil {
 		return nil, err

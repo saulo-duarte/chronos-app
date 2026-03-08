@@ -61,7 +61,7 @@ export interface UpdateCollectionDTO {
     is_archived?: boolean;
 }
 
-export type ResourceType = "FILE" | "LINK";
+export type ResourceType = "FILE" | "LINK" | "DRAWING";
 
 export interface Resource {
     id: string;

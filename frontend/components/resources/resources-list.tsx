@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Resource, UpdateResourceDTO } from "@/types";
 import { ResourceCard } from "./resource-card";
 import { EditResourceDialog } from "./edit-resource-dialog";
+import { DrawingEditor } from "./drawing-editor";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FolderOpen } from "lucide-react";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
@@ -34,6 +35,7 @@ export function ResourcesList({
   const [selectedResource, setSelectedResource] = useState<Resource | null>(
     null,
   );
+  const [activeDrawing, setActiveDrawing] = useState<Resource | null>(null);
 
   const { searchTerm, selectedTag } = useDashboardStore();
 
@@ -48,8 +50,12 @@ export function ResourcesList({
   }, [resources, searchTerm, selectedTag]);
 
   const handleEdit = (resource: Resource) => {
-    setSelectedResource(resource);
-    setIsEditDialogOpen(true);
+    if (resource.type === "DRAWING") {
+      setActiveDrawing(resource);
+    } else {
+      setSelectedResource(resource);
+      setIsEditDialogOpen(true);
+    }
   };
 
   const handleDeleteClick = (resource: Resource) => {
@@ -141,6 +147,13 @@ export function ResourcesList({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {activeDrawing && (
+        <DrawingEditor
+          resource={activeDrawing}
+          onClose={() => setActiveDrawing(null)}
+        />
+      )}
     </div>
   );
 }

@@ -14,7 +14,7 @@ type CreateResourceDTO struct {
 	Description  *string      `json:"description,omitempty" validate:"omitempty,max=1000"`
 	Tag          *string      `json:"tag,omitempty" validate:"omitempty,max=100"`
 	Path         string       `json:"path" validate:"required"`
-	Type         ResourceType `json:"type" validate:"required,oneof=FILE LINK"`
+	Type         ResourceType `json:"type" validate:"required,oneof=FILE LINK DRAWING"`
 	Size         int64        `json:"size" validate:"omitempty,min=0"`
 	MimeType     *string      `json:"mime_type,omitempty"`
 	File         io.Reader    `json:"-"`
@@ -24,6 +24,7 @@ type UpdateResourceDTO struct {
 	Title       *string `json:"title" validate:"omitempty,min=1,max=200"`
 	Description *string `json:"description" validate:"omitempty,max=1000"`
 	Tag         *string `json:"tag" validate:"omitempty,max=100"`
+	Path        *string `json:"path" validate:"omitempty"`
 }
 
 type ResourceResponseDTO struct {

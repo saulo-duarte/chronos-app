@@ -3,11 +3,11 @@
 import { Resource } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  FileText, 
-  Link as LinkIcon, 
-  Download, 
-  ExternalLink, 
+import {
+  FileText,
+  Link as LinkIcon,
+  Download,
+  ExternalLink,
   Trash2,
   Edit,
   File,
@@ -16,7 +16,7 @@ import {
   FileArchive,
   FileSpreadsheet,
   Tag as TagIcon,
-  MoreVertical
+  MoreVertical,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn, getTagColor } from "@/lib/utils";
@@ -53,30 +53,54 @@ const formatFileSize = (bytes: number): string => {
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
 };
 
-export function ResourceCard({ resource, onEdit, onDelete }: ResourceCardProps) {
+export function ResourceCard({
+  resource,
+  onEdit,
+  onDelete,
+}: ResourceCardProps) {
   const isFile = resource.type === "FILE";
-  const Icon = isFile ? getFileIcon(resource.mime_type) : LinkIcon;
+  const isDrawing = resource.type === "DRAWING";
+
+  const renderIcon = () => {
+    if (isDrawing) return <FileImage className="size-6" />;
+    if (!isFile) return <LinkIcon className="size-6" />;
+    const FileIconComp = getFileIcon(resource.mime_type);
+    return <FileIconComp className="size-6" />;
+  };
 
   const handleAction = (e?: React.MouseEvent) => {
     if (e) {
       const target = e.target as HTMLElement;
-      if (target.closest('button') || target.closest('[role="menuitem"]')) return;
+      if (target.closest("button") || target.closest('[role="menuitem"]'))
+        return;
     }
-    window.open(resource.path, "_blank", isFile ? undefined : "noopener,noreferrer");
+    if (isDrawing) {
+      onEdit(resource); // For now, clicking a drawing opens the editor
+    } else {
+      window.open(
+        resource.path,
+        "_blank",
+        isFile ? undefined : "noopener,noreferrer",
+      );
+    }
   };
 
   const tagStyles = resource.tag ? getTagColor(resource.tag) : null;
 
   return (
-    <div 
+    <div
       onClick={handleAction}
       className="group relative flex items-center gap-4 rounded-xl border border-border bg-card p-3 transition-all hover:bg-accent/50 hover:border-primary/30 cursor-pointer"
     >
-      <div className={cn(
-        "flex size-12 shrink-0 items-center justify-center rounded-lg border border-border/50 shadow-sm",
-        isFile ? "bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400" : "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400"
-      )}>
-        <Icon className="size-6" />
+      <div
+        className={cn(
+          "flex size-12 shrink-0 items-center justify-center rounded-lg border border-border/50 shadow-sm",
+          isFile
+            ? "bg-blue-50 text-blue-600 dark:bg-blue-950/30 dark:text-blue-400"
+            : "bg-indigo-50 text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400",
+        )}
+      >
+        {renderIcon()}
       </div>
 
       <div className="flex-1 min-w-0">
@@ -85,12 +109,12 @@ export function ResourceCard({ resource, onEdit, onDelete }: ResourceCardProps) 
             {resource.title}
           </h3>
           {resource.tag && (
-            <Badge 
-              variant="outline" 
-              style={{ 
-                backgroundColor: tagStyles?.bg, 
-                color: tagStyles?.text, 
-                borderColor: tagStyles?.border 
+            <Badge
+              variant="outline"
+              style={{
+                backgroundColor: tagStyles?.bg,
+                color: tagStyles?.text,
+                borderColor: tagStyles?.border,
               }}
               className="h-4 px-1.5 text-[9px] font-bold uppercase tracking-tighter"
             >
@@ -98,7 +122,7 @@ export function ResourceCard({ resource, onEdit, onDelete }: ResourceCardProps) 
             </Badge>
           )}
         </div>
-        
+
         <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
           <span className="flex items-center gap-1">
             {isFile ? formatFileSize(resource.size) : "Link Externo"}
@@ -108,25 +132,39 @@ export function ResourceCard({ resource, onEdit, onDelete }: ResourceCardProps) 
         </div>
       </div>
 
-      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="flex items-center gap-1"
+        onClick={(e) => e.stopPropagation()}
+      >
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="size-8 opacity-0 group-hover:opacity-100 transition-opacity">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 opacity-0 group-hover:opacity-100 transition-opacity"
+            >
               <MoreVertical className="size-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuItem onClick={() => handleAction()} className="gap-2">
-              {isFile ? <Download className="size-4" /> : <ExternalLink className="size-4" />}
+              {isFile ? (
+                <Download className="size-4" />
+              ) : (
+                <ExternalLink className="size-4" />
+              )}
               {isFile ? "Baixar" : "Abrir link"}
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onEdit(resource)} className="gap-2">
+            <DropdownMenuItem
+              onClick={() => onEdit(resource)}
+              className="gap-2"
+            >
               <Edit className="size-4" />
               Editar
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem 
-              onClick={() => onDelete(resource)} 
+            <DropdownMenuItem
+              onClick={() => onDelete(resource)}
               className="gap-2 text-destructive focus:text-destructive focus:bg-destructive/10"
             >
               <Trash2 className="size-4" />

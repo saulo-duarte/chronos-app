@@ -10,8 +10,9 @@ import (
 type ResourceType string
 
 const (
-	ResourceTypeFile ResourceType = "FILE"
-	ResourceTypeLink ResourceType = "LINK"
+	ResourceTypeFile    ResourceType = "FILE"
+	ResourceTypeLink    ResourceType = "LINK"
+	ResourceTypeDrawing ResourceType = "DRAWING"
 )
 
 type Resource struct {
