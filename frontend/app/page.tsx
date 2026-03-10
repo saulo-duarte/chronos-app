@@ -5,22 +5,29 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { MobileBottomNav } from "@/components/dashboard/mobile-bottom-nav";
 import { MobileFilters } from "@/components/dashboard/mobile-filters";
 import { TaskList } from "@/components/dashboard/task-list";
-import { RightPanel } from "@/components/dashboard/right-panel";
 import { CollectionModal } from "@/components/dashboard/collection-modal";
 import { useCollections } from "@/hooks/use-collections";
 import { useDeleteTask, useTasks, useUpdateTask } from "@/hooks/use-tasks";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { TaskDetails } from "@/components/dashboard/task-details";
-import { StatsDashboard } from "@/components/dashboard/stats-dashboard";
 import { useMe } from "@/hooks/use-auth";
 import { UpdateTaskDTO } from "@/types";
 import { MasteryQueue } from "@/components/mastery/mastery-queue";
+import { StatGrid } from "@/components/dashboard/stat-grid";
+import { TimeFilterTabs } from "@/components/dashboard/time-filter-tabs";
+import { HorizontalCalendar } from "@/components/dashboard/horizontal-calendar";
+import { useSearchParams } from "next/navigation";
+import { RadialProgress } from "@/components/dashboard/radial-progress";
 
-export default function Dashboard() {
+import { Header } from "@/components/dashboard/header";
+import { Suspense } from "react";
+
+function DashboardContent() {
   const { activeNav, setActiveNav, selectedTaskId, setSelectedTaskId } =
     useDashboardStore();
 
+  const searchParams = useSearchParams();
   const { data: user, isLoading: loadingUser } = useMe();
   const { data: collections = [] } = useCollections();
 
@@ -66,21 +73,28 @@ export default function Dashboard() {
   if (!user && !loadingUser) return null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-modern-gradient">
+    <div className="flex h-screen overflow-hidden bg-background">
       <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
 
-      <main className="flex flex-1 overflow-hidden">
-        {activeNav === "dashboard" ? (
-          <StatsDashboard />
+      <main className="flex flex-1 flex-col overflow-hidden">
+        {activeNav === "dashboard" ||
+        activeNav === "tasks" ||
+        activeNav.startsWith("collection-") ? (
+          <div className="flex flex-col h-full overflow-hidden">
+            <Header />
+            <StatGrid />
+            <TimeFilterTabs />
+            {searchParams.get("filter") === "day" && <HorizontalCalendar />}
+            <div className="flex-1 overflow-hidden">
+              <TaskList title={navTitle} />
+            </div>
+          </div>
         ) : activeNav === "mastery" ? (
           <MasteryQueue />
         ) : (
-          <>
+          <div className="flex-1 overflow-hidden">
             <TaskList title={navTitle} />
-            <div className="hidden xl:block">
-              <RightPanel />
-            </div>
-          </>
+          </div>
         )}
       </main>
 
@@ -104,7 +118,22 @@ export default function Dashboard() {
 
       <CollectionModal />
       <MobileFilters />
+      <RadialProgress />
       <MobileBottomNav />
     </div>
+  );
+}
+
+export default function Dashboard() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen w-screen items-center justify-center bg-background">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
   );
 }

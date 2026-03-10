@@ -26,17 +26,31 @@ export function useTaskGrouping(
 
           if (currentView === "today") {
             if (!t.end_time) return false;
-            return isSameDay(parseISO(t.end_time), now);
+            const date = parseISO(t.end_time.split("T")[0]);
+            return isSameDay(date, now);
+          }
+
+          if (currentView === "day") {
+            if (!t.end_time) return false;
+            const tDate = t.end_time.split("T")[0];
+            const filterDate = format(selectedDate, "yyyy-MM-dd");
+            return tDate === filterDate;
           }
 
           if (currentView === "week") {
             if (!t.end_time) return false;
-            return isSameWeek(parseISO(t.end_time), selectedDate, { weekStartsOn: 0 });
+            const date = parseISO(t.end_time.split("T")[0]);
+            return isSameWeek(date, selectedDate, { weekStartsOn: 0 });
           }
 
           if (currentView === "overdue") {
             if (t.status === "DONE" || !t.end_time) return false;
-            return isBefore(parseISO(t.end_time), startOfDay(now));
+            const date = parseISO(t.end_time.split("T")[0]);
+            return isBefore(date, startOfDay(now));
+          }
+
+          if (currentView === "no-date") {
+            return !t.end_time;
           }
 
           return true;
@@ -52,7 +66,7 @@ export function useTaskGrouping(
 
       const groups: Record<string, Task[]> = {};
       filtered.forEach((task) => {
-        const dateKey = task.end_time ? format(parseISO(task.end_time), "yyyy-MM-dd") : "No Date";
+        const dateKey = task.end_time ? task.end_time.split("T")[0] : "No Date";
         if (!groups[dateKey]) groups[dateKey] = [];
         groups[dateKey].push(task);
       });

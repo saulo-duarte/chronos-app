@@ -10,8 +10,9 @@ import {
 import { Task, Collection, Priority, Status } from "@/types";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { Button } from "@/components/ui/button";
-import { TaskCard } from "./task-card";
+import { TaskItem } from "./task-item";
 import { QuickAdd } from "./quick-add";
+import { useTaskFilters } from "@/hooks/use-task-filters";
 
 interface TaskListItemsProps {
   tasks: Task[];
@@ -27,18 +28,14 @@ export function TaskListItems({
   onToggleComplete,
   onAddTask,
 }: TaskListItemsProps) {
-  const {
-    view,
-    selectedDate,
-    setSelectedDate,
-    selectedTaskId,
-    setSelectedTaskId,
-  } = useDashboardStore();
+  const { currentFilter } = useTaskFilters();
+  const { selectedDate, setSelectedDate, selectedTaskId, setSelectedTaskId } =
+    useDashboardStore();
   const keys = Object.keys(groups).sort();
 
   return (
     <div className="p-4 md:p-6 max-w-5xl mx-auto w-full">
-      {view === "week" && (
+      {currentFilter === "week" && (
         <div className="md:hidden flex items-center justify-between mb-4 px-2">
           <Button
             variant="ghost"
@@ -81,14 +78,17 @@ export function TaskListItems({
               </div>
               <div className="grid gap-3">
                 {groups[dateKey].map((task) => (
-                  <TaskCard
+                  <TaskItem
                     key={task.id}
                     task={task}
-                    collection={collections.find(
-                      (c) => c.id === task.collection_id,
-                    )}
-                    onToggleComplete={onToggleComplete}
-                    onEdit={() => setSelectedTaskId(task.id)}
+                    collections={collections}
+                    onToggleStatus={() =>
+                      onToggleComplete(
+                        task.id,
+                        task.status === "DONE" ? "PENDING" : "DONE",
+                      )
+                    }
+                    onSelect={() => setSelectedTaskId(task.id)}
                     isActive={selectedTaskId === task.id}
                   />
                 ))}
@@ -98,18 +98,18 @@ export function TaskListItems({
         ) : (
           <div className="flex flex-col items-center justify-center py-16 text-center animate-in fade-in duration-500">
             <div className="flex size-16 items-center justify-center rounded-full bg-muted/50 mb-4">
-              {view === "overdue" ? (
+              {currentFilter === "overdue" ? (
                 <AlertCircle className="size-8 text-emerald-500/70" />
               ) : (
                 <ListChecks className="size-8 text-muted-foreground/50" />
               )}
             </div>
             <h3 className="text-base font-semibold text-foreground">
-              {view === "today"
+              {currentFilter === "today"
                 ? "No tasks for today"
-                : view === "week"
+                : currentFilter === "week"
                   ? "No tasks this week"
-                  : view === "overdue"
+                  : currentFilter === "overdue"
                     ? "All caught up!"
                     : "No tasks found"}
             </h3>

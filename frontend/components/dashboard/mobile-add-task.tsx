@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Plus, Flag, Calendar as CalendarIcon } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Flag, Calendar as CalendarIcon } from "lucide-react";
 import { Priority } from "@/types";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import {
   Select,
@@ -40,6 +39,12 @@ export function MobileAddTask({
 
   const isResourceMode = contentType === "resources" && !isPickerOpen;
 
+  useEffect(() => {
+    const handleOpen = () => setOpen(true);
+    window.addEventListener("open-quick-add", handleOpen);
+    return () => window.removeEventListener("open-quick-add", handleOpen);
+  }, []);
+
   const handleSubmit = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!title.trim()) return;
@@ -67,29 +72,11 @@ export function MobileAddTask({
   return (
     <div className="md:hidden fixed bottom-32 right-6 z-[80]">
       <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button
-            size="icon"
-            className={cn(
-              "size-14 rounded-full shadow-xl transition-all ring-4 outline-none",
-              isPickerOpen
-                ? "bg-primary text-primary-foreground ring-primary/30 glow-primary scale-110"
-                : "bg-primary text-primary-foreground ring-primary/20 shadow-primary/20",
-            )}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Plus
-              className={cn(
-                "size-8 transition-transform duration-500",
-                isPickerOpen && "rotate-90",
-              )}
-            />
-          </Button>
-        </SheetTrigger>
         <SheetContent
           side="bottom"
           className="rounded-t-[32px] p-6 pb-12 min-h-[40vh] max-h-[90vh] flex flex-col gap-6 bg-background border-t-0 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] z-[100] transition-transform duration-500 ease-out"
           onPointerDownOutside={(e) => e.preventDefault()}
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <SheetHeader>
             <SheetTitle>

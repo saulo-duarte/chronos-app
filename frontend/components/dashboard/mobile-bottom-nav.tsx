@@ -1,6 +1,4 @@
-"use client";
-
-import { LayoutDashboard, ListTodo, Brain, Layers } from "lucide-react";
+import { LayoutDashboard, ListTodo, Brain, Layers, Plus } from "lucide-react";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { cn } from "@/lib/utils";
 import { MobileCollectionPicker } from "./mobile-collection-picker";
@@ -19,50 +17,44 @@ export function MobileBottomNav() {
 
   return (
     <>
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-primary/95 backdrop-blur-xl border-t border-border/50 px-6 pb-2 pt-3 transition-colors duration-500">
-        <div className="flex items-center justify-between max-w-md mx-auto">
-          {navItems.map((item) => {
-            const isCollections = item.id === "collections";
-            const isHome = item.id === "tasks";
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[60] bg-background/95 backdrop-blur-xl border-t border-white/5 px-6 pb-2 pt-3 transition-colors duration-500">
+        <div className="flex items-center justify-between max-w-md mx-auto relative h-16">
+          {navItems.slice(0, 2).map((item) => (
+            <NavItem
+              key={item.id}
+              item={item}
+              activeNav={activeNav}
+              isPickerOpen={isPickerOpen}
+              setIsPickerOpen={setIsPickerOpen}
+              setActiveNav={setActiveNav}
+            />
+          ))}
 
-            const isActive = isCollections
-              ? isPickerOpen
-              : isHome
-                ? (activeNav === "tasks" ||
-                    activeNav.startsWith("collection-")) &&
-                  !isPickerOpen
-                : activeNav === item.id;
+          {/* Central FAB Unified */}
+          <div className="flex flex-col items-center -mt-10">
+            <button
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent("open-quick-add"));
+              }}
+              className={cn(
+                "size-14 rounded-full bg-[#1c1e2d] border-4 border-background text-primary shadow-2xl flex items-center justify-center transition-all duration-300",
+                "hover:scale-110 active:scale-95",
+              )}
+            >
+              <Plus size={32} />
+            </button>
+          </div>
 
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  if (isSelected(item.id, activeNav) && !isCollections) return;
-
-                  if (isCollections) {
-                    setIsPickerOpen(!isPickerOpen);
-                  } else {
-                    setActiveNav(item.id);
-                    setIsPickerOpen(false);
-                  }
-                }}
-                className={cn(
-                  "flex flex-col items-center gap-1.5 transition-all duration-300 relative px-4 py-1 rounded-xl",
-                  isActive
-                    ? "text-gray-200 active-tab"
-                    : "text-gray-400 hover:text-white",
-                )}
-              >
-                <item.icon className={cn("size-6", isActive && "scale-110")} />
-                <span className="text-[11px] font-bold tracking-tight">
-                  {item.label}
-                </span>
-                {isActive && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-8 h-1 bg-white rounded-full" />
-                )}
-              </button>
-            );
-          })}
+          {navItems.slice(2).map((item) => (
+            <NavItem
+              key={item.id}
+              item={item}
+              activeNav={activeNav}
+              isPickerOpen={isPickerOpen}
+              setIsPickerOpen={setIsPickerOpen}
+              setActiveNav={setActiveNav}
+            />
+          ))}
         </div>
       </nav>
 
@@ -84,8 +76,56 @@ export function MobileBottomNav() {
   );
 }
 
-function isSelected(itemId: string, activeNav: string) {
-  if (itemId === "tasks")
-    return activeNav === "tasks" || activeNav.startsWith("collection-");
-  return itemId === activeNav;
+interface NavItemProps {
+  item: {
+    id: string;
+    label: string;
+    icon: any;
+  };
+  activeNav: string;
+  isPickerOpen: boolean;
+  setIsPickerOpen: (v: boolean) => void;
+  setActiveNav: (v: string) => void;
+}
+
+function NavItem({
+  item,
+  activeNav,
+  isPickerOpen,
+  setIsPickerOpen,
+  setActiveNav,
+}: NavItemProps) {
+  const isCollections = item.id === "collections";
+  const isHome = item.id === "tasks";
+
+  const isActive = isCollections
+    ? isPickerOpen
+    : isHome
+      ? (activeNav === "tasks" || activeNav.startsWith("collection-")) &&
+        !isPickerOpen
+      : activeNav === item.id;
+
+  return (
+    <button
+      onClick={() => {
+        if (isCollections) {
+          setIsPickerOpen(!isPickerOpen);
+        } else {
+          setActiveNav(item.id);
+          setIsPickerOpen(false);
+        }
+      }}
+      className={cn(
+        "flex flex-col items-center gap-1 transition-all duration-300 relative px-2 py-1",
+        isActive
+          ? "text-primary"
+          : "text-muted-foreground hover:text-foreground",
+      )}
+    >
+      <item.icon className={cn("size-6", isActive && "scale-110")} />
+      <span className="text-[10px] font-bold tracking-tight uppercase">
+        {item.label}
+      </span>
+    </button>
+  );
 }

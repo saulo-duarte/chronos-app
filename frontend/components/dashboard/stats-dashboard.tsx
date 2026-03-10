@@ -66,7 +66,7 @@ export function StatsDashboard() {
   if (isLoading) return <StatsDashboardSkeleton />;
 
   return (
-    <div className="flex flex-col h-full w-full bg-modern-gradient overflow-hidden">
+    <div className="flex flex-col h-full w-full bg-background overflow-hidden">
       <header className="shrink-0 border-b border-border px-6 py-8 md:px-10 backdrop-blur-md">
         <h1 className="text-3xl font-black tracking-tight text-foreground md:text-5xl uppercase">
           Dashboard

@@ -1,4 +1,5 @@
 export type Priority = "LOW" | "MEDIUM" | "HIGH";
+export type PriorityLevel = Priority;
 export type Status = "PENDING" | "DONE";
 
 export interface Collection {

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { Priority, Status } from "@/types";
 
-export type DashboardView = "all" | "today" | "week" | "overdue";
+export type DashboardView = "all" | "today" | "day" | "week" | "no-date" | "overdue";
 
 interface DashboardStore {
     activeNav: string;

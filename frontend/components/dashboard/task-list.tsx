@@ -9,13 +9,13 @@ import {
   useCreateTask,
 } from "@/hooks/use-tasks";
 import { useTaskGrouping } from "@/hooks/use-task-grouping";
+import { useTaskFilters } from "@/hooks/use-task-filters";
+import { isToday, isBefore, parseISO, isSameWeek, startOfDay } from "date-fns";
 import { CollectionResources } from "@/components/resources/collection-resources";
 import { MobileAddTask } from "./mobile-add-task";
 import { MobileFilters } from "./mobile-filters";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Inbox, CalendarDays, CalendarRange, AlertCircle } from "lucide-react";
-import { Priority, Status } from "@/types";
 import { DashboardView, useDashboardStore } from "@/stores/use-dashboard-store";
+import { Priority, Status } from "@/types";
 import { cn } from "@/lib/utils";
 import { TaskListSkeleton } from "./skeletons";
 import { TaskListHeader } from "./task-list-header";
@@ -27,14 +27,11 @@ interface TaskListProps {
 
 export function TaskList({ title }: TaskListProps) {
   const {
-    view,
-    setView,
     contentType,
     setContentType,
     filterPriority,
     filterStatus,
     activeNav,
-    selectedDate,
     isPickerOpen,
   } = useDashboardStore();
 
@@ -52,13 +49,49 @@ export function TaskList({ title }: TaskListProps) {
   const createCollectionMutation = useCreateCollection();
   const createResourceMutation = useCreateResource();
 
-  const { groupedTasks, allCategoryGroups } = useTaskGrouping(
+  const { currentFilter, selectedDate: searchDate } = useTaskFilters();
+
+  const { groupedTasks } = useTaskGrouping(
     tasks,
-    view,
-    selectedDate,
+    currentFilter as DashboardView,
+    searchDate ? new Date(searchDate) : new Date(),
     filterPriority,
     filterStatus,
   );
+
+  const filteredTasks = useMemo(() => {
+    let result = tasks;
+
+    if (currentFilter === "today") {
+      result = tasks.filter((t) => {
+        if (!t.end_time) return false;
+        const date = parseISO(t.end_time.split("T")[0]);
+        return isToday(date);
+      });
+    } else if (currentFilter === "day" && searchDate) {
+      result = tasks.filter((t) => {
+        if (!t.end_time) return false;
+        return t.end_time.split("T")[0] === searchDate;
+      });
+    } else if (currentFilter === "week") {
+      result = tasks.filter((t) => {
+        if (!t.end_time) return false;
+        const date = parseISO(t.end_time.split("T")[0]);
+        const targetWeekDate = searchDate ? parseISO(searchDate) : new Date();
+        return isSameWeek(date, targetWeekDate, { weekStartsOn: 0 });
+      });
+    } else if (currentFilter === "overdue") {
+      result = tasks.filter((t) => {
+        if (t.status === "DONE" || !t.end_time) return false;
+        const date = parseISO(t.end_time.split("T")[0]);
+        return isBefore(date, startOfDay(new Date())) && !isToday(date);
+      });
+    } else if (currentFilter === "no-date") {
+      result = tasks.filter((t) => !t.end_time);
+    }
+
+    return result;
+  }, [tasks, currentFilter, searchDate]);
 
   const incompleteCount = useMemo(
     () => tasks.filter((t) => t.status === "PENDING").length,
@@ -103,13 +136,6 @@ export function TaskList({ title }: TaskListProps) {
     });
   };
 
-  const navItems = [
-    { id: "all", label: "All", icon: Inbox },
-    { id: "today", label: "Today", icon: CalendarDays },
-    { id: "week", label: "Week", icon: CalendarRange },
-    { id: "overdue", label: "Overdue", icon: AlertCircle },
-  ];
-
   return (
     <div className="flex flex-1 flex-col bg-background h-full overflow-hidden">
       <TaskListHeader
@@ -118,28 +144,21 @@ export function TaskList({ title }: TaskListProps) {
         incompleteCount={incompleteCount}
       />
 
-      <main className="flex-1 relative overflow-hidden flex flex-col min-h-0">
+      <main className="flex-1 relative overflow-auto flex flex-col min-h-0">
         {isLoading ? (
           <TaskListSkeleton />
         ) : (
-          <div className="flex-1 min-h-0 flex flex-col relative w-full">
+          <div className="flex-1 min-h-0 flex flex-col relative w-full pb-36 md:pb-6">
             {selectedCollectionId && (
-              <div className="flex md:hidden flex-col gap-4 px-4 pt-2 pb-0 border-b border-border/50 bg-background z-10 sticky top-0">
-                <h2 className="text-2xl font-medium tracking-tight text-foreground">
+              <div className="flex md:hidden flex-col gap-4 px-4 pt-4 pb-2 border-b border-border/50 bg-background/95 backdrop-blur-sm z-10 sticky top-0">
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">
                   {title}
                 </h2>
-                <div className="flex items-end gap-6 overflow-x-auto no-scrollbar px-1">
+                <div className="flex items-center gap-6 pb-2">
                   <button
-                    onClick={() => {
-                      setContentType("tasks");
-                      const scrollArea = document.getElementById(
-                        "mobile-scroll-container",
-                      );
-                      if (scrollArea)
-                        scrollArea.scrollTo({ left: 0, behavior: "smooth" });
-                    }}
+                    onClick={() => setContentType("tasks")}
                     className={cn(
-                      "pb-2 text-lg font-medium transition-all relative whitespace-nowrap",
+                      "text-lg font-medium transition-all relative whitespace-nowrap",
                       contentType === "tasks"
                         ? "text-primary"
                         : "text-muted-foreground",
@@ -147,23 +166,13 @@ export function TaskList({ title }: TaskListProps) {
                   >
                     Task
                     {contentType === "tasks" && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary animate-in fade-in duration-300" />
+                      <div className="absolute -bottom-2.5 left-0 right-0 h-[2px] bg-primary rounded-t-full" />
                     )}
                   </button>
                   <button
-                    onClick={() => {
-                      setContentType("resources");
-                      const scrollArea = document.getElementById(
-                        "mobile-scroll-container",
-                      );
-                      if (scrollArea)
-                        scrollArea.scrollTo({
-                          left: scrollArea.clientWidth,
-                          behavior: "smooth",
-                        });
-                    }}
+                    onClick={() => setContentType("resources")}
                     className={cn(
-                      "pb-2 text-lg font-medium transition-all relative whitespace-nowrap",
+                      "text-lg font-medium transition-all relative whitespace-nowrap",
                       contentType === "resources"
                         ? "text-primary"
                         : "text-muted-foreground",
@@ -171,94 +180,31 @@ export function TaskList({ title }: TaskListProps) {
                   >
                     Resources
                     {contentType === "resources" && (
-                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary animate-in fade-in duration-300" />
+                      <div className="absolute -bottom-2.5 left-0 right-0 h-[2px] bg-primary rounded-t-full" />
                     )}
                   </button>
                 </div>
               </div>
             )}
 
-            <div
-              id="mobile-scroll-container"
-              className="flex flex-1 overflow-x-auto snap-x snap-mandatory scrollbar-hide no-scrollbar scroll-smooth"
-              onScroll={(e) => {
-                const { scrollLeft, clientWidth } = e.currentTarget;
-                if (selectedCollectionId) {
-                  const section =
-                    scrollLeft < clientWidth / 2 ? "tasks" : "resources";
-                  if (section !== contentType) {
-                    setContentType(section);
-                  }
-                } else {
-                  const exactIndex = scrollLeft / clientWidth;
-                  const index = Math.round(exactIndex);
-                  const diff = Math.abs(exactIndex - index);
-                  if (diff < 0.3) {
-                    const newView = navItems[index]?.id as DashboardView;
-                    if (newView && newView !== view) {
-                      setView(newView);
-                    }
-                  }
-                }
-              }}
-            >
-              {selectedCollectionId ? (
-                <>
-                  <div
-                    className={cn(
-                      "w-full shrink-0 snap-center flex flex-col h-full",
-                      contentType === "resources" ? "md:hidden" : "md:flex",
-                    )}
-                  >
-                    <ScrollArea className="h-full pb-24 md:pb-6">
-                      <TaskListItems
-                        tasks={tasks}
-                        groups={groupedTasks}
-                        collections={collections}
-                        onToggleComplete={handleToggleComplete}
-                        onAddTask={handleAddTask}
-                      />
-                    </ScrollArea>
-                  </div>
-
-                  <div
-                    className={cn(
-                      "w-full shrink-0 snap-center flex flex-col h-full",
-                      contentType === "tasks" ? "md:hidden" : "md:flex",
-                    )}
-                  >
-                    <CollectionResources collectionId={selectedCollectionId} />
-                  </div>
-                </>
+            <div className="w-full shrink-0 flex flex-col h-full">
+              {contentType === "tasks" || !selectedCollectionId ? (
+                <TaskListItems
+                  tasks={filteredTasks}
+                  groups={groupedTasks}
+                  collections={collections}
+                  onToggleComplete={handleToggleComplete}
+                  onAddTask={handleAddTask}
+                />
               ) : (
-                <>
-                  {navItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="w-full shrink-0 snap-center flex flex-col h-full"
-                    >
-                      <ScrollArea className="h-full pb-32 md:pb-6">
-                        <TaskListItems
-                          tasks={tasks}
-                          groups={
-                            allCategoryGroups[
-                              item.id as keyof typeof allCategoryGroups
-                            ]
-                          }
-                          collections={collections}
-                          onToggleComplete={handleToggleComplete}
-                          onAddTask={handleAddTask}
-                        />
-                      </ScrollArea>
-                    </div>
-                  ))}
-                </>
+                <div className="md:hidden flex-1 p-4">
+                  <CollectionResources collectionId={selectedCollectionId} />
+                </div>
               )}
             </div>
           </div>
         )}
       </main>
-      {/* Mobile Action Buttons (FABs) */}
       {!isPickerOpen && activeNav !== "collections" && <MobileFilters />}
       <MobileAddTask
         onAddTask={handleAddTask}
