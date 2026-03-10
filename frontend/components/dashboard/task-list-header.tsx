@@ -33,7 +33,7 @@ export function TaskListHeader({
   } = useDashboardStore();
 
   return (
-    <header className="flex flex-col border-b border-border backdrop-blur-md transition-colors duration-500">
+    <header className="hidden md:flex flex-col border-b border-border backdrop-blur-md transition-colors duration-500">
       <div className="px-4 py-4 md:px-6">
         <div className="flex items-center justify-between mb-4">
           <div className="space-y-0.5 w-full">

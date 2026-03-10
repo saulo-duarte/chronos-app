@@ -99,14 +99,14 @@ export function CollectionResources({
 
   return (
     <div className="flex flex-col h-full relative">
-      <div className="absolute top-4 right-6 z-10">
+      <div className="flex justify-end px-4 mb-2 z-10">
         <Button
           onClick={handleCreateDrawing}
           size="sm"
           className="gap-2 shadow-sm rounded-xl"
         >
           <PenTool className="size-4" />
-          <span className="hidden sm:inline">Novo Quadro</span>
+          <span className="inline">Novo Quadro</span>
         </Button>
       </div>
 

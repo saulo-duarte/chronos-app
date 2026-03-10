@@ -73,24 +73,15 @@ export function ResourcesList({
 
   return (
     <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden">
-      <div className="px-6 py-4 space-y-1 shrink-0">
-        <h2 className="text-xl font-semibold text-foreground">Resources</h2>
-        <p className="text-sm text-muted-foreground">
-          {filteredResources.length}{" "}
-          {filteredResources.length === 1 ? "item" : "itens"}
-          {selectedTag && ` em #${selectedTag}`}
-        </p>
-      </div>
-
       <div className="flex-1 min-h-0">
         <ScrollArea className="h-full">
-          <div className="p-6">
+          <div className="px-4 py-2 pb-24">
             {filteredResources.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="flex size-16 items-center justify-center rounded-full bg-muted">
                   <FolderOpen className="size-8 text-muted-foreground" />
                 </div>
-                <h3 className="mt-4 text-lg font-medium text-foreground">
+                <h3 className="mt-4 text-base font-medium text-foreground">
                   {searchTerm || selectedTag
                     ? "Nenhum resultado encontrado"
                     : "Nenhum resource ainda"}
@@ -102,7 +93,7 @@ export function ResourcesList({
                 </p>
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-2">
                 {filteredResources.map((resource) => (
                   <ResourceCard
                     key={resource.id}

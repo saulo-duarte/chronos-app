@@ -16,7 +16,6 @@ import { MobileAddTask } from "./mobile-add-task";
 import { MobileFilters } from "./mobile-filters";
 import { DashboardView, useDashboardStore } from "@/stores/use-dashboard-store";
 import { Priority, Status } from "@/types";
-import { cn } from "@/lib/utils";
 import { TaskListSkeleton } from "./skeletons";
 import { TaskListHeader } from "./task-list-header";
 import { TaskListItems } from "./task-list-items";
@@ -26,14 +25,8 @@ interface TaskListProps {
 }
 
 export function TaskList({ title }: TaskListProps) {
-  const {
-    contentType,
-    setContentType,
-    filterPriority,
-    filterStatus,
-    activeNav,
-    isPickerOpen,
-  } = useDashboardStore();
+  const { filterPriority, filterStatus, activeNav, isPickerOpen } =
+    useDashboardStore();
 
   const { data: collections = [] } = useCollections();
 
@@ -54,7 +47,7 @@ export function TaskList({ title }: TaskListProps) {
   const { groupedTasks } = useTaskGrouping(
     tasks,
     currentFilter as DashboardView,
-    searchDate ? new Date(searchDate) : new Date(),
+    searchDate ? parseISO(searchDate) : new Date(),
     filterPriority,
     filterStatus,
   );
@@ -150,54 +143,29 @@ export function TaskList({ title }: TaskListProps) {
         ) : (
           <div className="flex-1 min-h-0 flex flex-col relative w-full pb-36 md:pb-6">
             {selectedCollectionId && (
-              <div className="flex md:hidden flex-col gap-4 px-4 pt-4 pb-2 border-b border-border/50 bg-background/95 backdrop-blur-sm z-10 sticky top-0">
-                <h2 className="text-2xl font-bold tracking-tight text-foreground">
+              <div className="flex md:hidden flex-col px-4 pt-2 pb-1 bg-background/95 backdrop-blur-sm z-10 sticky top-0">
+                <h2 className="text-xl font-bold tracking-tight text-foreground">
                   {title}
                 </h2>
-                <div className="flex items-center gap-6 pb-2">
-                  <button
-                    onClick={() => setContentType("tasks")}
-                    className={cn(
-                      "text-lg font-medium transition-all relative whitespace-nowrap",
-                      contentType === "tasks"
-                        ? "text-primary"
-                        : "text-muted-foreground",
-                    )}
-                  >
-                    Task
-                    {contentType === "tasks" && (
-                      <div className="absolute -bottom-2.5 left-0 right-0 h-[2px] bg-primary rounded-t-full" />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setContentType("resources")}
-                    className={cn(
-                      "text-lg font-medium transition-all relative whitespace-nowrap",
-                      contentType === "resources"
-                        ? "text-primary"
-                        : "text-muted-foreground",
-                    )}
-                  >
-                    Resources
-                    {contentType === "resources" && (
-                      <div className="absolute -bottom-2.5 left-0 right-0 h-[2px] bg-primary rounded-t-full" />
-                    )}
-                  </button>
-                </div>
               </div>
             )}
 
-            <div className="w-full shrink-0 flex flex-col h-full">
-              {contentType === "tasks" || !selectedCollectionId ? (
-                <TaskListItems
-                  tasks={filteredTasks}
-                  groups={groupedTasks}
-                  collections={collections}
-                  onToggleComplete={handleToggleComplete}
-                  onAddTask={handleAddTask}
-                />
-              ) : (
-                <div className="md:hidden flex-1 p-4">
+            <div className="w-full shrink-0 flex flex-col h-full gap-6">
+              <TaskListItems
+                tasks={filteredTasks}
+                groups={groupedTasks}
+                collections={collections}
+                onToggleComplete={handleToggleComplete}
+                onAddTask={handleAddTask}
+              />
+              {selectedCollectionId && (
+                <div className="md:hidden flex-1 px-0 py-2">
+                  <div className="flex items-center gap-3 px-6 mb-4">
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary/85 whitespace-nowrap">
+                      Resources
+                    </span>
+                    <div className="h-[1px] flex-1 bg-border/60" />
+                  </div>
                   <CollectionResources collectionId={selectedCollectionId} />
                 </div>
               )}
