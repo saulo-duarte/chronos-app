@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Dialog,
   DialogContent,
@@ -11,9 +13,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCreateCollection, useUpdateCollection } from "@/hooks/use-collections";
+import {
+  useCreateCollection,
+  useUpdateCollection,
+} from "@/hooks/use-collections";
 import { Loader2 } from "lucide-react";
 import { useCollectionModal } from "@/stores/use-collection-modal";
+import {
+  createCollectionSchema,
+  CreateCollectionSchema,
+} from "@/schemas/collections";
 
 const COLORS = [
   "#00ADD8",
@@ -27,35 +36,53 @@ const COLORS = [
 ];
 
 export function CollectionModal() {
-  const { isOpen, collection: collectionToEdit, onClose } = useCollectionModal();
-  
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [selectedColor, setSelectedColor] = useState(COLORS[0]);
+  const {
+    isOpen,
+    collection: collectionToEdit,
+    onClose,
+  } = useCollectionModal();
 
   const createCollection = useCreateCollection();
   const updateCollection = useUpdateCollection();
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<CreateCollectionSchema>({
+    resolver: zodResolver(createCollectionSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      color: COLORS[0],
+      icon: "",
+    },
+  });
+
+  const selectedColor = watch("color");
+
   useEffect(() => {
     if (isOpen) {
-      setTitle(collectionToEdit?.title ?? "");
-      setDescription(collectionToEdit?.description ?? "");
-      setSelectedColor(collectionToEdit?.color ?? COLORS[0]);
+      reset({
+        title: collectionToEdit?.title ?? "",
+        description: collectionToEdit?.description ?? "",
+        color: collectionToEdit?.color ?? COLORS[0],
+        icon: collectionToEdit?.icon ?? "",
+      });
     }
-  }, [isOpen, collectionToEdit]);
+  }, [isOpen, collectionToEdit, reset]);
 
-  const handleSave = () => {
-    if (!title) return;
-
-    const payload = { title, description, color: selectedColor };
-
+  const onSubmit: SubmitHandler<CreateCollectionSchema> = (data) => {
     if (collectionToEdit) {
       updateCollection.mutate(
-        { id: collectionToEdit.id, dto: payload },
-        { onSuccess: onClose }
+        { id: collectionToEdit.id, dto: data },
+        { onSuccess: onClose },
       );
     } else {
-      createCollection.mutate(payload, { onSuccess: onClose });
+      createCollection.mutate(data, { onSuccess: onClose });
     }
   };
 
@@ -70,25 +97,26 @@ export function CollectionModal() {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="title">Title</Label>
             <Input
               id="title"
               placeholder="e.g. Work, Personal, Fitness"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              {...register("title")}
               disabled={isPending}
             />
+            {errors.title && (
+              <p className="text-xs text-destructive">{errors.title.message}</p>
+            )}
           </div>
-          
+
           <div className="grid gap-2">
             <Label htmlFor="description">Description (optional)</Label>
             <Input
               id="description"
               placeholder="What is this collection about?"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              {...register("description")}
               disabled={isPending}
             />
           </div>
@@ -100,7 +128,7 @@ export function CollectionModal() {
                 <button
                   key={color}
                   type="button"
-                  onClick={() => setSelectedColor(color)}
+                  onClick={() => setValue("color", color)}
                   className={`size-7 rounded-full border-2 transition-all ${
                     selectedColor === color
                       ? "border-primary scale-110 ring-2 ring-primary/20"
@@ -112,19 +140,15 @@ export function CollectionModal() {
               ))}
             </div>
           </div>
-        </div>
+        </form>
 
         <DialogFooter>
-          <Button
-            variant="ghost"
-            onClick={onClose}
-            disabled={isPending}
-          >
+          <Button variant="ghost" onClick={onClose} disabled={isPending}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleSave} 
-            disabled={!title || isPending}
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            disabled={isPending}
             className="min-w-[120px]"
           >
             {isPending ? (

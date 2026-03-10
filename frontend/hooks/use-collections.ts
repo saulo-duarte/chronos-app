@@ -1,24 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api, { APIError } from "@/lib/api";
-import { Collection, CreateCollectionDTO, UpdateCollectionDTO } from "@/types";
+import { collectionService } from "@/services/collections";
+import { queryKeys } from "@/lib/query-keys";
+import { CreateCollectionDTO, UpdateCollectionDTO } from "@/types";
 
 export function useCollections() {
-    return useQuery<Collection[], APIError>({
-        queryKey: ["collections"],
-        queryFn: async () => {
-            const res = await api.get<Collection[]>("/collections");
-            return res.data;
-        },
+    return useQuery({
+        queryKey: queryKeys.collections.all,
+        queryFn: () => collectionService.getCollections(),
     });
 }
 
 export function useCollection(id: string) {
-    return useQuery<Collection, APIError>({
-        queryKey: ["collections", id],
-        queryFn: async () => {
-            const res = await api.get<Collection>(`/collections/${id}`);
-            return res.data;
-        },
+    return useQuery({
+        queryKey: queryKeys.collections.detail(id),
+        queryFn: () => collectionService.getCollection(id),
         enabled: !!id,
     });
 }
@@ -26,13 +21,10 @@ export function useCollection(id: string) {
 export function useCreateCollection() {
     const queryClient = useQueryClient();
 
-    return useMutation<Collection, APIError, CreateCollectionDTO>({
-        mutationFn: async (dto) => {
-            const res = await api.post<Collection>("/collections", dto);
-            return res.data;
-        },
+    return useMutation({
+        mutationFn: (dto: CreateCollectionDTO) => collectionService.createCollection(dto),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["collections"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.collections.all });
         },
     });
 }
@@ -40,14 +32,12 @@ export function useCreateCollection() {
 export function useUpdateCollection() {
     const queryClient = useQueryClient();
 
-    return useMutation<Collection, APIError, { id: string; dto: UpdateCollectionDTO }>({
-        mutationFn: async ({ id, dto }) => {
-            const res = await api.put<Collection>(`/collections/${id}`, dto);
-            return res.data;
-        },
+    return useMutation({
+        mutationFn: ({ id, dto }: { id: string; dto: UpdateCollectionDTO }) => 
+            collectionService.updateCollection(id, dto),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ["collections"] });
-            queryClient.invalidateQueries({ queryKey: ["collections", data.id] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.collections.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.collections.detail(data.id) });
         },
     });
 }
@@ -55,12 +45,10 @@ export function useUpdateCollection() {
 export function useDeleteCollection() {
     const queryClient = useQueryClient();
 
-    return useMutation<void, APIError, string>({
-        mutationFn: async (id) => {
-            await api.delete(`/collections/${id}`);
-        },
+    return useMutation({
+        mutationFn: (id: string) => collectionService.deleteCollection(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["collections"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.collections.all });
         },
     });
 }

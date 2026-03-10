@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Flag, Calendar as CalendarIcon } from "lucide-react";
 import { Priority } from "@/types";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
@@ -20,6 +22,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { z } from "zod";
+
+const quickAddSchema = z.object({
+  title: z.string().min(1, "O título é obrigatório"),
+  url: z.string(),
+  priority: z.enum(["LOW", "MEDIUM", "HIGH"]),
+  date: z.string(),
+});
+
+type QuickAddSchema = z.infer<typeof quickAddSchema>;
 
 interface MobileAddTaskProps {
   onAddTask: (title: string, priority: Priority, date?: Date) => void;
@@ -32,11 +44,25 @@ export function MobileAddTask({
 }: MobileAddTaskProps) {
   const { isPickerOpen, contentType } = useDashboardStore();
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [url, setUrl] = useState("");
-  const [priority, setPriority] = useState<Priority>("MEDIUM");
-  const [date, setDate] = useState("");
 
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors, isValid },
+  } = useForm<QuickAddSchema>({
+    resolver: zodResolver(quickAddSchema),
+    defaultValues: {
+      title: "",
+      url: "",
+      priority: "MEDIUM",
+      date: "",
+    },
+  });
+
+  const priority = watch("priority");
   const isResourceMode = contentType === "resources" && !isPickerOpen;
 
   useEffect(() => {
@@ -45,21 +71,19 @@ export function MobileAddTask({
     return () => window.removeEventListener("open-quick-add", handleOpen);
   }, []);
 
-  const handleSubmit = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!title.trim()) return;
-
+  const onSubmit: SubmitHandler<QuickAddSchema> = (data) => {
     if (isResourceMode && onAddResource) {
-      if (!url.trim()) return;
-      onAddResource(title.trim(), url.trim());
-      setUrl("");
+      if (!data.url) return;
+      onAddResource(data.title.trim(), data.url.trim());
     } else {
-      onAddTask(title.trim(), priority, date ? new Date(date) : undefined);
-      setPriority("MEDIUM");
-      setDate("");
+      onAddTask(
+        data.title.trim(),
+        data.priority as Priority,
+        data.date ? new Date(data.date) : undefined,
+      );
     }
 
-    setTitle("");
+    reset();
     setOpen(false);
   };
 
@@ -88,7 +112,10 @@ export function MobileAddTask({
             </SheetTitle>
           </SheetHeader>
 
-          <div className="flex flex-col gap-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-6"
+          >
             <div className="space-y-2">
               <label className="text-sm font-medium">
                 {isPickerOpen
@@ -98,8 +125,7 @@ export function MobileAddTask({
                     : "O que precisa ser feito?"}
               </label>
               <Input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                {...register("title")}
                 placeholder={
                   isPickerOpen
                     ? "Ex: Trabalho, Estudo..."
@@ -108,16 +134,19 @@ export function MobileAddTask({
                       : "Ex: Finalizar planejamento"
                 }
                 className="h-12 text-base"
-                autoFocus={false}
               />
+              {errors.title && (
+                <p className="text-xs text-destructive">
+                  {errors.title.message}
+                </p>
+              )}
             </div>
 
             {isResourceMode && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Link (URL)</label>
                 <Input
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  {...register("url")}
                   placeholder="https://..."
                   className="h-12 text-base"
                 />
@@ -130,12 +159,15 @@ export function MobileAddTask({
                   <label className="text-sm font-medium">Prioridade</label>
                   <Select
                     value={priority}
-                    onValueChange={(v) => setPriority(v as Priority)}
+                    onValueChange={(v) => setValue("priority", v as Priority)}
                   >
                     <SelectTrigger className="h-12 w-full">
                       <div className="flex items-center gap-2">
                         <Flag
-                          className={cn("size-4", priorityColors[priority])}
+                          className={cn(
+                            "size-4",
+                            priorityColors[priority as Priority],
+                          )}
                         />
                         <SelectValue />
                       </div>
@@ -156,8 +188,7 @@ export function MobileAddTask({
                     <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                     <Input
                       type="datetime-local"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
+                      {...register("date")}
                       className="h-12 pl-9 w-full"
                     />
                   </div>
@@ -166,8 +197,8 @@ export function MobileAddTask({
             )}
 
             <Button
-              onClick={handleSubmit}
-              disabled={!title.trim() || (isResourceMode && !url.trim())}
+              type="submit"
+              disabled={!isValid || (isResourceMode && !watch("url")?.trim())}
               className="w-full h-12 text-base mt-4"
             >
               {isPickerOpen
@@ -176,7 +207,7 @@ export function MobileAddTask({
                   ? "Salvar Recurso"
                   : "Criar Task"}
             </Button>
-          </div>
+          </form>
         </SheetContent>
       </Sheet>
     </div>

@@ -1,25 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api, { APIError } from "@/lib/api";
-import { Task, CreateTaskDTO, UpdateTaskDTO, Status } from "@/types";
+import { taskService } from "@/services/tasks";
+import { queryKeys } from "@/lib/query-keys";
+import { CreateTaskDTO, UpdateTaskDTO, Status } from "@/types";
 
 export function useTasks(collectionId?: string) {
-    return useQuery<Task[], APIError>({
-        queryKey: collectionId ? ["tasks", { collectionId }] : ["tasks"],
-        queryFn: async () => {
-            const url = collectionId ? `/tasks/collection/${collectionId}` : "/tasks";
-            const res = await api.get<Task[]>(url);
-            return res.data;
-        },
+    return useQuery({
+        queryKey: queryKeys.tasks.list(collectionId),
+        queryFn: () => taskService.getTasks(collectionId),
     });
 }
 
 export function useTask(id: string) {
-    return useQuery<Task, APIError>({
-        queryKey: ["tasks", id],
-        queryFn: async () => {
-            const res = await api.get<Task>(`/tasks/${id}`);
-            return res.data;
-        },
+    return useQuery({
+        queryKey: queryKeys.tasks.detail(id),
+        queryFn: () => taskService.getTask(id),
         enabled: !!id,
     });
 }
@@ -27,13 +21,10 @@ export function useTask(id: string) {
 export function useCreateTask() {
     const queryClient = useQueryClient();
 
-    return useMutation<Task, APIError, CreateTaskDTO>({
-        mutationFn: async (dto) => {
-            const res = await api.post<Task>("/tasks", dto);
-            return res.data;
-        },
+    return useMutation({
+        mutationFn: (dto: CreateTaskDTO) => taskService.createTask(dto),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
         },
     });
 }
@@ -41,14 +32,12 @@ export function useCreateTask() {
 export function useUpdateTask() {
     const queryClient = useQueryClient();
 
-    return useMutation<Task, APIError, { id: string; dto: UpdateTaskDTO }>({
-        mutationFn: async ({ id, dto }) => {
-            const res = await api.put<Task>(`/tasks/${id}`, dto);
-            return res.data;
-        },
+    return useMutation({
+        mutationFn: ({ id, dto }: { id: string; dto: UpdateTaskDTO }) => 
+            taskService.updateTask(id, dto),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ["tasks"] });
-            queryClient.invalidateQueries({ queryKey: ["tasks", data.id] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(data.id) });
         },
     });
 }
@@ -56,14 +45,12 @@ export function useUpdateTask() {
 export function useUpdateTaskStatus() {
     const queryClient = useQueryClient();
 
-    return useMutation<Task, APIError, { id: string; status: Status }>({
-        mutationFn: async ({ id, status }) => {
-            const res = await api.patch<Task>(`/tasks/${id}/status`, { status });
-            return res.data;
-        },
+    return useMutation({
+        mutationFn: ({ id, status }: { id: string; status: Status }) => 
+            taskService.updateStatus(id, status),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ["tasks"] });
-            queryClient.invalidateQueries({ queryKey: ["tasks", data.id] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(data.id) });
         },
     });
 }
@@ -71,12 +58,10 @@ export function useUpdateTaskStatus() {
 export function useDeleteTask() {
     const queryClient = useQueryClient();
 
-    return useMutation<void, APIError, string>({
-        mutationFn: async (id) => {
-            await api.delete(`/tasks/${id}`);
-        },
+    return useMutation({
+        mutationFn: (id: string) => taskService.deleteTask(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["tasks"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.tasks.all });
         },
     });
 }

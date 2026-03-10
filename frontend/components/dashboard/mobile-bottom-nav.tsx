@@ -30,7 +30,6 @@ export function MobileBottomNav() {
             />
           ))}
 
-          {/* Central FAB Unified */}
           <div className="flex flex-col items-center -mt-10">
             <button
               onClick={() => {

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
+import { leetcodeService } from "@/services/leetcode";
+import { queryKeys } from "@/lib/query-keys";
 import type {
-    LeetCodeProblem,
     CreateLeetCodeProblemDTO,
     UpdateLeetCodeProblemDTO,
     ReviewDTO,
@@ -9,21 +9,15 @@ import type {
 
 export function useLeetCodeProblems() {
     return useQuery({
-        queryKey: ["leetcode"],
-        queryFn: async () => {
-            const { data } = await api.get<LeetCodeProblem[]>("/leetcode");
-            return data;
-        },
+        queryKey: queryKeys.leetcode.all,
+        queryFn: () => leetcodeService.getProblems(),
     });
 }
 
 export function useDueProblems() {
     return useQuery({
-        queryKey: ["leetcode", "due"],
-        queryFn: async () => {
-            const { data } = await api.get<LeetCodeProblem[]>("/leetcode/due");
-            return data;
-        },
+        queryKey: queryKeys.leetcode.due,
+        queryFn: () => leetcodeService.getDueProblems(),
     });
 }
 
@@ -31,12 +25,9 @@ export function useCreateProblem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (dto: CreateLeetCodeProblemDTO) => {
-            const { data } = await api.post<LeetCodeProblem>("/leetcode", dto);
-            return data;
-        },
+        mutationFn: (dto: CreateLeetCodeProblemDTO) => leetcodeService.createProblem(dto),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["leetcode"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.leetcode.all });
         },
     });
 }
@@ -45,18 +36,15 @@ export function useUpdateProblem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({
+        mutationFn: ({
             id,
             dto,
         }: {
             id: string;
             dto: UpdateLeetCodeProblemDTO;
-        }) => {
-            const { data } = await api.put<LeetCodeProblem>(`/leetcode/${id}`, dto);
-            return data;
-        },
+        }) => leetcodeService.updateProblem(id, dto),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["leetcode"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.leetcode.all });
         },
     });
 }
@@ -65,15 +53,11 @@ export function useReviewProblem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ id, dto }: { id: string; dto: ReviewDTO }) => {
-            const { data } = await api.post<LeetCodeProblem>(
-                `/leetcode/${id}/review`,
-                dto
-            );
-            return data;
-        },
+        mutationFn: ({ id, dto }: { id: string; dto: ReviewDTO }) => 
+            leetcodeService.reviewProblem(id, dto),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["leetcode"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.leetcode.all });
+            queryClient.invalidateQueries({ queryKey: queryKeys.leetcode.due });
         },
     });
 }
@@ -82,11 +66,9 @@ export function useDeleteProblem() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (id: string) => {
-            await api.delete(`/leetcode/${id}`);
-        },
+        mutationFn: (id: string) => leetcodeService.deleteProblem(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["leetcode"] });
+            queryClient.invalidateQueries({ queryKey: queryKeys.leetcode.all });
         },
     });
 }

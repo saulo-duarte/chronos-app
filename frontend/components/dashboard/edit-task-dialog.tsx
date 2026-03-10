@@ -2,13 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
-import { 
-  Task, 
-  Priority,  
-  Collection, 
-  UpdateTaskDTO,
-  Status
-} from "@/types";
+import { Task, Priority, Collection, UpdateTaskDTO, Status } from "@/types";
 
 import {
   Dialog,
@@ -58,7 +52,7 @@ export function EditTaskDialog({
       setPriority(task.priority);
       setStatus(task.status);
       setCollectionId(task.collection_id || "none");
-      
+
       // Format dates for datetime-local input (YYYY-MM-DDThh:mm)
       const formatForInput = (dateStr?: string) => {
         if (!dateStr) return "";
@@ -80,16 +74,11 @@ export function EditTaskDialog({
       description: description || undefined,
       priority,
       status,
-      collection_id: collectionId === "none" ? undefined : collectionId, // We might need to handle null explicitly if backend supports clearing it
+      collection_id: collectionId === "none" ? undefined : collectionId,
       start_time: startTime ? new Date(startTime).toISOString() : undefined,
       end_time: endTime ? new Date(endTime).toISOString() : undefined,
     };
 
-    // If backend doesn't support clearing collection by sending undefined, we assume it's omitted. 
-    // If we want to clear it, we might need to send null or handle it differently? 
-    // For now, let's assume update logic handles overwrite 
-    // Checking backend DTO: CollectionID *uuid.UUID `json:"collection_id,omitempty"`
-    
     onUpdate(task.id, updates);
     onOpenChange(false);
   };
@@ -146,10 +135,7 @@ export function EditTaskDialog({
 
             <div className="space-y-2">
               <Label>Collection</Label>
-              <Select
-                value={collectionId}
-                onValueChange={setCollectionId}
-              >
+              <Select value={collectionId} onValueChange={setCollectionId}>
                 <SelectTrigger>
                   <SelectValue placeholder="No collection" />
                 </SelectTrigger>
@@ -194,22 +180,22 @@ export function EditTaskDialog({
               </div>
             </div>
           </div>
-          
-           <div className="space-y-2">
-              <Label>Status</Label>
-              <Select
-                value={status}
-                onValueChange={(v) => setStatus(v as Status)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="DONE">Done</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+
+          <div className="space-y-2">
+            <Label>Status</Label>
+            <Select
+              value={status}
+              onValueChange={(v) => setStatus(v as Status)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="DONE">Done</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           <DialogFooter className="pt-4">
             <Button

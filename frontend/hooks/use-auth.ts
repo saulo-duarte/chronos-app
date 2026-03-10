@@ -1,21 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api, { APIError } from "@/lib/api";
+import { authService, User } from "@/services/auth";
+import { queryKeys } from "@/lib/query-keys";
 import { useRouter } from "next/navigation";
-
-export interface User {
-    id: string;
-    email: string;
-    name: string;
-}
+import { APIError } from "@/lib/api";
 
 export function useMe() {
     return useQuery<User, APIError>({
-        queryKey: ["me"],
-        queryFn: async () => {
-            const res = await api.get<any>("/auth/me");
-            return res.data as User;
-        },
+        queryKey: queryKeys.auth.me,
+        queryFn: () => authService.getMe(),
         retry: false,
+        staleTime: 1000 * 60 * 5, // 5 minutes
     });
 }
 
@@ -24,11 +18,9 @@ export function useLogout() {
     const router = useRouter();
 
     return useMutation({
-        mutationFn: async () => {
-            await api.post("/auth/logout");
-            queryClient.setQueryData(["me"], null);
-        },
+        mutationFn: () => authService.logout(),
         onSuccess: () => {
+            queryClient.setQueryData(queryKeys.auth.me, null);
             router.push("/login");
         },
     });
@@ -36,8 +28,7 @@ export function useLogout() {
 
 export function useLoginWithGoogle() {
     const login = () => {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api/v1";
-        window.location.href = `${apiUrl}/auth/login`;
+        window.location.href = authService.getLoginUrl();
     };
 
     return { login };
