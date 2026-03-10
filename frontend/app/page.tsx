@@ -24,8 +24,13 @@ import { Header } from "@/components/dashboard/header";
 import { Suspense } from "react";
 
 function DashboardContent() {
-  const { activeNav, setActiveNav, selectedTaskId, setSelectedTaskId } =
-    useDashboardStore();
+  const {
+    activeNav,
+    setActiveNav,
+    selectedTaskId,
+    setSelectedTaskId,
+    contentType,
+  } = useDashboardStore();
 
   const searchParams = useSearchParams();
   const { data: user, isLoading: loadingUser } = useMe();
@@ -83,8 +88,9 @@ function DashboardContent() {
           <div className="flex flex-col h-full overflow-hidden">
             <Header />
             <StatGrid />
-            <TimeFilterTabs />
-            {searchParams.get("filter") === "day" && <HorizontalCalendar />}
+            {contentType === "tasks" && <TimeFilterTabs />}
+            {searchParams.get("filter") === "day" &&
+              contentType === "tasks" && <HorizontalCalendar />}
             <div className="flex-1 overflow-hidden">
               <TaskList title={navTitle} />
             </div>
@@ -118,7 +124,7 @@ function DashboardContent() {
 
       <CollectionModal />
       <MobileFilters />
-      <RadialProgress />
+      {contentType === "tasks" && <RadialProgress />}
       <MobileBottomNav />
     </div>
   );

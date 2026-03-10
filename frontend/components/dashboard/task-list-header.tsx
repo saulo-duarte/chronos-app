@@ -35,20 +35,18 @@ export function TaskListHeader({
   return (
     <header className="hidden md:flex flex-col border-b border-border backdrop-blur-md transition-colors duration-500">
       <div className="px-4 py-4 md:px-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="space-y-0.5 w-full">
-            <div className="flex items-center justify-between md:block">
-              <h1 className="hidden md:block text-2xl font-bold tracking-tight text-foreground">
-                <span
-                  className={cn(
-                    selectedCollectionId && "text-primary font-extrabold",
-                  )}
-                >
-                  {title}
-                </span>
-              </h1>
-            </div>
-            <p className="hidden md:block text-xs text-muted-foreground">
+        <div className="flex items-end gap-6 mb-4">
+          <div className="space-y-0.5">
+            <h1 className="text-2xl font-bold tracking-tight text-foreground">
+              <span
+                className={cn(
+                  selectedCollectionId && "text-primary font-extrabold",
+                )}
+              >
+                {title}
+              </span>
+            </h1>
+            <p className="text-xs text-muted-foreground whitespace-nowrap">
               {incompleteCount}{" "}
               {incompleteCount === 1 ? "task remaining" : "tasks remaining"}
             </p>
@@ -59,29 +57,19 @@ export function TaskListHeader({
               value={contentType}
               onValueChange={(v) => {
                 setContentType(v as "tasks" | "resources");
-                const scrollArea = document.getElementById(
-                  "mobile-scroll-container",
-                );
-                if (scrollArea) {
-                  const width = scrollArea.clientWidth;
-                  scrollArea.scrollTo({
-                    left: v === "tasks" ? 0 : width,
-                    behavior: "smooth",
-                  });
-                }
               }}
-              className="hidden md:block bg-muted/50 p-1 rounded-full"
+              className="bg-muted/50 p-1 rounded-full mb-0.5 shrink-0"
             >
-              <TabsList className="h-8 bg-transparent border-none">
+              <TabsList className="h-7 bg-transparent border-none">
                 <TabsTrigger
                   value="tasks"
-                  className="rounded-full px-4 text-xs"
+                  className="rounded-full px-4 text-[10px] uppercase font-bold tracking-wider h-5"
                 >
                   Tasks
                 </TabsTrigger>
                 <TabsTrigger
                   value="resources"
-                  className="rounded-full px-4 text-xs"
+                  className="rounded-full px-4 text-[10px] uppercase font-bold tracking-wider h-5"
                 >
                   Resources
                 </TabsTrigger>

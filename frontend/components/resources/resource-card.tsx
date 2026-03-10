@@ -15,7 +15,6 @@ import {
   FileVideo,
   FileArchive,
   FileSpreadsheet,
-  Tag as TagIcon,
   MoreVertical,
 } from "lucide-react";
 import { format } from "date-fns";
@@ -90,7 +89,7 @@ export function ResourceCard({
   return (
     <div
       onClick={handleAction}
-      className="group relative flex items-center gap-4 rounded-xl border border-border bg-card p-3 transition-all hover:bg-accent/50 hover:border-primary/30 cursor-pointer"
+      className="group relative flex items-center gap-3 md:gap-4 rounded-xl border border-border bg-card p-3 transition-all hover:bg-accent/50 hover:border-primary/30 cursor-pointer"
     >
       <div
         className={cn(

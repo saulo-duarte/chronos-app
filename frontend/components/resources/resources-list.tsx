@@ -75,7 +75,7 @@ export function ResourcesList({
     <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden">
       <div className="flex-1 min-h-0">
         <ScrollArea className="h-full">
-          <div className="px-4 py-2 pb-24">
+          <div className="px-4 py-2 pb-24 max-w-5xl mx-auto w-full">
             {filteredResources.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="flex size-16 items-center justify-center rounded-full bg-muted">
