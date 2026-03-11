@@ -5,8 +5,9 @@ import dynamic from "next/dynamic";
 import { useUpdateResource } from "@/hooks/use-resources";
 import { Resource } from "@/types";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Home } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
 import "@excalidraw/excalidraw/index.css";
 import { ExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import { AppState } from "@excalidraw/excalidraw/types";
@@ -37,45 +38,62 @@ const Excalidraw = dynamic(
 interface DrawingEditorProps {
   resource: Resource;
   onClose: () => void;
+  onGoHome?: () => void;
 }
 
-export function DrawingEditor({ resource, onClose }: DrawingEditorProps) {
+export function DrawingEditor({
+  resource,
+  onClose,
+  onGoHome,
+}: DrawingEditorProps) {
   const { toast } = useToast();
   const updateResourceMutation = useUpdateResource();
   const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = useRef(false);
   const [isDirty, setIsDirty] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
+  const [pendingAction, setPendingAction] = useState<"close" | "home" | null>(
+    null,
+  );
   const [initialData, setInitialData] = useState<any>(null);
   const excalidrawAPI = useRef<any>(null);
+  const lastSavedElementsRef = useRef<string>("");
 
   // Load initial data from the resource path (which stores the JSON content)
   useEffect(() => {
+    if (initialData) return; // Only set initial data once to avoid resetting the canvas
+
     try {
       if (resource.path && resource.path.trim() !== "") {
         const parsed = JSON.parse(resource.path);
+        const elements = parsed.elements || [];
+        lastSavedElementsRef.current = JSON.stringify(elements);
 
-        // Sanitize appState to ensure collaborators is a Map or removed
-        const sanitizedAppState = { ...parsed.appState };
+        // Sanitize appState
+        const sanitizedAppState = { ...parsed.appState, theme: "dark" };
         if (sanitizedAppState.collaborators) {
           delete sanitizedAppState.collaborators;
         }
 
         setInitialData({
-          elements: parsed.elements || [],
+          elements,
           appState: sanitizedAppState,
         });
       } else {
-        setInitialData({ elements: [], appState: {} });
+        lastSavedElementsRef.current = JSON.stringify([]);
+        setInitialData({ elements: [], appState: { theme: "dark" } });
       }
     } catch (e) {
       console.error("Failed to parse drawing data:", e);
-      setInitialData({ elements: [], appState: {} });
+      lastSavedElementsRef.current = JSON.stringify([]);
+      setInitialData({ elements: [], appState: { theme: "dark" } });
     }
-  }, [resource.path]);
+  }, [resource.path, initialData]);
 
   const handleSave = useCallback(
     async (elements: readonly ExcalidrawElement[], appState: AppState) => {
       setIsSaving(true);
+      isSavingRef.current = true;
       try {
         // Only save essential UI states to avoid serialization issues
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -90,6 +108,7 @@ export function DrawingEditor({ resource, onClose }: DrawingEditorProps) {
           id: resource.id,
           dto: { path: dataToSave } as any,
         });
+        lastSavedElementsRef.current = JSON.stringify(elements);
         setIsDirty(false);
         toast({
           title: "Quadro salvo",
@@ -103,14 +122,23 @@ export function DrawingEditor({ resource, onClose }: DrawingEditorProps) {
           variant: "destructive",
         });
       } finally {
-        setIsSaving(false);
+        setTimeout(() => {
+          setIsSaving(false);
+          isSavingRef.current = false;
+        }, 500); // Debounce to allow Excalidraw to settle
       }
     },
+
     [resource.id, updateResourceMutation, toast],
   );
 
-  const onChange = () => {
-    setIsDirty(true);
+  const onChange = (elements: readonly ExcalidrawElement[]) => {
+    if (isSavingRef.current) return;
+
+    const currentElementsJson = JSON.stringify(elements);
+    if (currentElementsJson !== lastSavedElementsRef.current) {
+      setIsDirty(true);
+    }
   };
 
   useEffect(() => {
@@ -126,9 +154,24 @@ export function DrawingEditor({ resource, onClose }: DrawingEditorProps) {
 
   const handleClose = () => {
     if (isDirty) {
+      setPendingAction("close");
       setShowExitDialog(true);
     } else {
       onClose();
+    }
+  };
+
+  const handleHome = () => {
+    if (isDirty) {
+      setPendingAction("home");
+      setShowExitDialog(true);
+    } else {
+      if (onGoHome) {
+        onGoHome();
+      } else {
+        // Fallback or ensure we go to root
+        window.location.href = "/";
+      }
     }
   };
 
@@ -167,26 +210,38 @@ export function DrawingEditor({ resource, onClose }: DrawingEditorProps) {
             </span>
           </div>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            if (excalidrawAPI.current) {
-              const elements = excalidrawAPI.current.getSceneElements();
-              const appState = excalidrawAPI.current.getAppState();
-              handleSave(elements, appState);
-            }
-          }}
-          disabled={isSaving}
-          className="gap-2"
-        >
-          {isSaving ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Save className="size-4" />
-          )}
-          <span className="hidden md:inline">Save</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleHome}
+            className="gap-2"
+          >
+            <Home className="size-4" />
+            <span className="hidden md:inline">Início</span>
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (excalidrawAPI.current) {
+                const elements = excalidrawAPI.current.getSceneElements();
+                const appState = excalidrawAPI.current.getAppState();
+                handleSave(elements, appState);
+              }
+            }}
+            disabled={isSaving}
+            className="gap-2"
+          >
+            {isSaving ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Save className="size-4" />
+            )}
+            <span className="hidden md:inline">Salvar</span>
+          </Button>
+        </div>
       </div>
 
       <div className="flex-1 w-full h-full relative">
@@ -212,7 +267,15 @@ export function DrawingEditor({ resource, onClose }: DrawingEditorProps) {
             <AlertDialogAction
               onClick={() => {
                 setShowExitDialog(false);
-                onClose();
+                if (pendingAction === "home") {
+                  if (onGoHome) {
+                    onGoHome();
+                  } else {
+                    window.location.href = "/";
+                  }
+                } else {
+                  onClose();
+                }
               }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

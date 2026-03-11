@@ -34,7 +34,7 @@ export function TaskListHeader({
 
   return (
     <header className="hidden md:flex flex-col border-b border-border backdrop-blur-md transition-colors duration-500">
-      <div className="px-4 py-4 md:px-6">
+      <div className="px-4 py-4 md:px-8">
         <div className="flex items-center justify-between gap-6">
           {/* Título e Contador */}
           <div className="flex items-end gap-6">
@@ -59,7 +59,7 @@ export function TaskListHeader({
               <Tabs
                 value={contentType}
                 onValueChange={(v) => {
-                  setContentType(v as "tasks" | "resources");
+                  setContentType(v as "tasks" | "resources" | "drawings");
                 }}
                 className="bg-muted/50 p-1 rounded-full mb-0.5 shrink-0"
               >
@@ -75,6 +75,12 @@ export function TaskListHeader({
                     className="rounded-full px-4 text-[10px] uppercase font-bold tracking-wider h-5"
                   >
                     Resources
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="drawings"
+                    className="rounded-full px-4 text-[10px] uppercase font-bold tracking-wider h-5"
+                  >
+                    Quadros
                   </TabsTrigger>
                 </TabsList>
               </Tabs>

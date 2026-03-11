@@ -5,7 +5,7 @@ export type DashboardView = "all" | "today" | "day" | "week" | "no-date" | "over
 
 interface DashboardStore {
     activeNav: string;
-    contentType: "tasks" | "resources";
+    contentType: "tasks" | "resources" | "drawings";
     selectedTaskId: string | null;
     view: DashboardView;
     selectedDate: Date;
@@ -16,7 +16,7 @@ interface DashboardStore {
     searchTerm: string;
     selectedTag: string | null;
     setActiveNav: (nav: string, view?: DashboardView) => void;
-    setContentType: (type: "tasks" | "resources") => void;
+    setContentType: (type: "tasks" | "resources" | "drawings") => void;
     setSelectedTaskId: (id: string | null) => void;
     setView: (view: DashboardView) => void;
     setSelectedDate: (date: Date) => void;

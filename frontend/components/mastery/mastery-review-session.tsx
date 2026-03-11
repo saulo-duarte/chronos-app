@@ -18,7 +18,7 @@ export function MasteryReviewSession({
   onReview,
 }: MasteryReviewSessionProps) {
   return (
-    <div className="max-w-3xl mx-auto py-12 px-6 space-y-8">
+    <div className="max-w-3xl mx-auto py-12 px-8 space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="text-xs font-medium text-gray-500 uppercase tracking-widest">

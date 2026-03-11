@@ -6,12 +6,11 @@ import {
   useResources,
   useUpdateResource,
   useDeleteResource,
-  useCreateResource,
 } from "@/hooks/use-resources";
 import { UpdateResourceDTO } from "@/types";
-import { Loader2, PenTool } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
 
 interface CollectionResourcesProps {
   collectionId: string;
@@ -24,7 +23,12 @@ export function CollectionResources({
   const { data: resources = [], isLoading } = useResources(collectionId);
   const updateMutation = useUpdateResource();
   const deleteMutation = useDeleteResource();
-  const createMutation = useCreateResource();
+  const { contentType } = useDashboardStore();
+
+  const filteredResources = resources.filter((r) => {
+    if (contentType === "drawings") return r.type === "DRAWING";
+    return r.type !== "DRAWING"; // 'resources' nav tab hides drawings
+  });
 
   const handleUpdate = useCallback(
     async (id: string, updates: UpdateResourceDTO) => {
@@ -67,28 +71,6 @@ export function CollectionResources({
     [deleteMutation, collectionId, toast],
   );
 
-  const handleCreateDrawing = useCallback(async () => {
-    try {
-      await createMutation.mutateAsync({
-        collection_id: collectionId,
-        title: "Novo Quadro",
-        path: JSON.stringify({ elements: [], appState: {} }), // Empty drawing
-        type: "DRAWING",
-        size: 0,
-      });
-      toast({
-        title: "Quadro criado",
-        description: "Novo quadro do Excalidraw criado com sucesso.",
-      });
-    } catch {
-      toast({
-        title: "Erro ao criar",
-        description: "Não foi possível criar o quadro. Tente novamente.",
-        variant: "destructive",
-      });
-    }
-  }, [createMutation, collectionId, toast]);
-
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -99,19 +81,8 @@ export function CollectionResources({
 
   return (
     <div className="flex flex-col h-full relative">
-      <div className="flex justify-end px-4 mb-2 z-10">
-        <Button
-          onClick={handleCreateDrawing}
-          size="sm"
-          className="gap-2 shadow-sm rounded-xl"
-        >
-          <PenTool className="size-4" />
-          <span className="inline">Novo Quadro</span>
-        </Button>
-      </div>
-
       <ResourcesList
-        resources={resources}
+        resources={filteredResources}
         onUpdate={handleUpdate}
         onDelete={handleDelete}
       />

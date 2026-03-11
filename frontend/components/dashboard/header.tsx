@@ -13,7 +13,7 @@ export function Header() {
   if (!user) return null;
 
   return (
-    <header className="flex items-center justify-between px-6 py-4 bg-background border-b border-white/5">
+    <header className="flex items-center justify-between px-4 md:px-8 py-4 bg-background border-b border-white/5">
       <div className="flex items-center gap-4">
         <Avatar className="size-12 ring-2 ring-primary/20">
           <AvatarImage

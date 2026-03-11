@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { useCollections, useCreateCollection } from "@/hooks/use-collections";
 import { useCreateResource } from "@/hooks/use-resources";
 import {
@@ -12,10 +13,10 @@ import { useTaskGrouping } from "@/hooks/use-task-grouping";
 import { useTaskFilters } from "@/hooks/use-task-filters";
 import { parseISO } from "date-fns";
 import { CollectionResources } from "@/components/resources/collection-resources";
-import { MobileAddTask } from "./mobile-add-task";
+import { MobileQuickAdd } from "./mobile-quick-add";
 import { MobileFilters } from "./mobile-filters";
 import { DashboardView, useDashboardStore } from "@/stores/use-dashboard-store";
-import { Priority, Status } from "@/types";
+import { Priority, Status, ResourceType } from "@/types";
 import { TaskListSkeleton } from "./skeletons";
 import { TaskListHeader } from "./task-list-header";
 import { TaskListItems } from "./task-list-items";
@@ -94,19 +95,66 @@ export function TaskList({ title }: TaskListProps) {
     });
   };
 
-  const handleAddResource = (titleRes: string, urlRes: string) => {
+  const router = useRouter();
+
+  const handleAddResource = async (
+    titleRes: string,
+    urlRes: string,
+    typeRes: ResourceType,
+    tag?: string,
+  ) => {
     if (!selectedCollectionId) return;
-    createResourceMutation.mutate({
-      collection_id: selectedCollectionId,
-      title: titleRes,
-      path: urlRes,
-      type: "LINK",
-      size: 0,
-    });
+    if (typeRes === "DRAWING") {
+      const created = await createResourceMutation.mutateAsync({
+        collection_id: selectedCollectionId,
+        title: titleRes,
+        path: JSON.stringify({ elements: [], appState: {} }),
+        type: "DRAWING",
+        tag,
+        size: 0,
+      });
+      router.push(`/drawing/${created.id}`);
+    } else {
+      createResourceMutation.mutate({
+        collection_id: selectedCollectionId,
+        title: titleRes,
+        path: urlRes,
+        type: typeRes,
+        tag,
+        size: 0,
+      });
+    }
+  };
+
+  const touchStartX = useRef<number | null>(null);
+  const TAB_ORDER: (typeof contentType)[] = ["tasks", "resources", "drawings"];
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!selectedCollectionId || touchStartX.current === null) return;
+    const deltaX = touchStartX.current - e.changedTouches[0].clientX;
+    touchStartX.current = null;
+
+    const threshold = 80; // slightly higher for full page swipe
+    if (Math.abs(deltaX) < threshold) return;
+
+    const currentIndex = TAB_ORDER.indexOf(contentType);
+    if (deltaX > 0 && currentIndex < TAB_ORDER.length - 1) {
+      setContentType(TAB_ORDER[currentIndex + 1]);
+    } else if (deltaX < 0 && currentIndex > 0) {
+      setContentType(TAB_ORDER[currentIndex - 1]);
+    }
   };
 
   return (
-    <div className="flex flex-1 flex-col bg-background h-full overflow-hidden">
+    <div
+      className="flex flex-1 flex-col bg-background h-full overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
       <TaskListHeader
         title={title}
         selectedCollectionId={selectedCollectionId}
@@ -145,7 +193,7 @@ export function TaskList({ title }: TaskListProps) {
         )}
       </main>
       {!isPickerOpen && activeNav !== "collections" && <MobileFilters />}
-      <MobileAddTask
+      <MobileQuickAdd
         onAddTask={handleAddTask}
         onAddResource={handleAddResource}
       />

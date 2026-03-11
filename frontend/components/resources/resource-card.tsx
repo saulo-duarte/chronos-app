@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+
 import { Resource } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,6 +59,7 @@ export function ResourceCard({
   onEdit,
   onDelete,
 }: ResourceCardProps) {
+  const router = useRouter();
   const isFile = resource.type === "FILE";
   const isDrawing = resource.type === "DRAWING";
 
@@ -74,7 +77,7 @@ export function ResourceCard({
         return;
     }
     if (isDrawing) {
-      onEdit(resource); // For now, clicking a drawing opens the editor
+      router.push(`/drawing/${resource.id}`);
     } else {
       window.open(
         resource.path,
@@ -155,11 +158,15 @@ export function ResourceCard({
               {isFile ? "Baixar" : "Abrir link"}
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => onEdit(resource)}
+              onClick={() =>
+                isDrawing
+                  ? router.push(`/drawing/${resource.id}`)
+                  : onEdit(resource)
+              }
               className="gap-2"
             >
               <Edit className="size-4" />
-              Editar
+              {isDrawing ? "Abrir Quadro" : "Editar"}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

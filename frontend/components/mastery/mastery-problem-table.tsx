@@ -34,7 +34,7 @@ export function MasteryProblemTable({
 }: MasteryProblemTableProps) {
   return (
     <div className="bg-[#282828] border border-[#333] rounded-lg overflow-hidden">
-      <div className="grid grid-cols-[1fr_120px_150px_120px] px-6 py-3 border-b border-[#333] text-[12px] font-medium text-gray-500 uppercase tracking-wider">
+      <div className="grid grid-cols-[1fr_120px_150px_120px] px-8 py-3 border-b border-[#333] text-[12px] font-medium text-gray-500 uppercase tracking-wider">
         <div>Title</div>
         <div>Difficulty</div>
         <div>Pattern</div>
@@ -78,7 +78,7 @@ function ProblemItem({
   showActions: boolean;
 }) {
   return (
-    <div className="grid grid-cols-[1fr_120px_150px_120px] items-center px-6 py-3 hover:bg-[#333] transition-colors group">
+    <div className="grid grid-cols-[1fr_120px_150px_120px] items-center px-8 py-3 hover:bg-[#333] transition-colors group">
       <div className="flex items-center gap-3 min-w-0">
         <h3 className="text-[14px] font-medium text-[#eff1f6] truncate group-hover:text-blue-400 transition-colors">
           {problem.title}

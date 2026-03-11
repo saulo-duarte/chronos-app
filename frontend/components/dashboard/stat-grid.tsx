@@ -39,8 +39,8 @@ export function StatGrid() {
   }, [tasks]);
 
   return (
-    <div className="w-full px-4 pt-4 pb-2 transition-all">
-      <div className="flex items-center justify-between mb-2 px-1">
+    <div className="w-full px-4 md:px-8 pt-4 pb-2 transition-all">
+      <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-widest">
           Overview
         </h3>
