@@ -6,6 +6,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useEffect, useRef } from "react";
 
 const tabs: { id: FilterType; label: string }[] = [
+  { id: "all", label: "All" },
   { id: "today", label: "Today" },
   { id: "day", label: "Day" },
   { id: "week", label: "Week" },

@@ -50,6 +50,7 @@ export function TaskList({ title }: TaskListProps) {
   const createTaskMutation = useCreateTask();
   const createCollectionMutation = useCreateCollection();
   const createResourceMutation = useCreateResource();
+  const router = useRouter();
 
   const { currentFilter, selectedDate: searchDate } = useTaskFilters();
 
@@ -71,31 +72,6 @@ export function TaskList({ title }: TaskListProps) {
   const handleToggleComplete = (id: string, currentStatus: Status) => {
     updateStatusMutation.mutate({ id, status: currentStatus });
   };
-
-  const handleAddTask = (
-    taskTitle: string,
-    priority: Priority,
-    date?: Date,
-  ) => {
-    if (isPickerOpen) {
-      createCollectionMutation.mutate({
-        title: taskTitle,
-        color: "#3b82f6",
-      });
-      return;
-    }
-
-    createTaskMutation.mutate({
-      title: taskTitle,
-      priority,
-      status: "PENDING",
-      start_time: new Date().toISOString(),
-      end_time: date ? date.toISOString() : undefined,
-      collection_id: selectedCollectionId,
-    });
-  };
-
-  const router = useRouter();
 
   const handleAddResource = async (
     titleRes: string,
@@ -181,7 +157,20 @@ export function TaskList({ title }: TaskListProps) {
                   groups={groupedTasks}
                   collections={collections}
                   onToggleComplete={handleToggleComplete}
-                  onAddTask={handleAddTask}
+                  onAddTask={(title, priority, date, description) => {
+                    createTaskMutation.mutate({
+                      title,
+                      priority,
+                      status: "PENDING",
+                      start_time: new Date().toISOString(),
+                      end_time: date ? date.toISOString() : undefined,
+                      description,
+                      collection_id: selectedCollectionId,
+                    });
+                  }}
+                  onAddCollection={(title, color, description) => {
+                    createCollectionMutation.mutate({ title, color, description });
+                  }}
                 />
               ) : (
                 <div className="flex-1 px-0 py-2">
@@ -194,7 +183,20 @@ export function TaskList({ title }: TaskListProps) {
       </main>
       {!isPickerOpen && activeNav !== "collections" && <MobileFilters />}
       <MobileQuickAdd
-        onAddTask={handleAddTask}
+        onAddTask={(title, priority, date, description) => {
+          createTaskMutation.mutate({
+            title,
+            priority,
+            status: "PENDING",
+            start_time: new Date().toISOString(),
+            end_time: date ? date.toISOString() : undefined,
+            description,
+            collection_id: selectedCollectionId,
+          });
+        }}
+        onAddCollection={(title, color, description) => {
+          createCollectionMutation.mutate({ title, color, description });
+        }}
         onAddResource={handleAddResource}
       />
     </div>

@@ -4,7 +4,7 @@ import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useCallback } from "react";
 import { format } from "date-fns";
 
-export type FilterType = "today" | "day" | "week" | "no-date" | "overdue";
+export type FilterType = "all" | "today" | "day" | "week" | "no-date" | "overdue";
 
 export function useTaskFilters() {
   const searchParams = useSearchParams();

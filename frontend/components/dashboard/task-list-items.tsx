@@ -19,7 +19,8 @@ interface TaskListItemsProps {
   groups: Record<string, Task[]>;
   collections: Collection[];
   onToggleComplete: (id: string, status: Status) => void;
-  onAddTask: (title: string, priority: Priority, date?: Date) => void;
+  onAddTask: (title: string, priority: Priority, date?: Date, description?: string) => void;
+  onAddCollection: (title: string, color: string, description?: string) => void;
 }
 
 export function TaskListItems({
@@ -27,6 +28,7 @@ export function TaskListItems({
   collections,
   onToggleComplete,
   onAddTask,
+  onAddCollection,
 }: TaskListItemsProps) {
   const { currentFilter } = useTaskFilters();
   const { selectedDate, setSelectedDate, selectedTaskId, setSelectedTaskId } =
@@ -60,7 +62,7 @@ export function TaskListItems({
       )}
 
       <div className="hidden md:block mb-8">
-        <QuickAdd onAddTask={onAddTask} />
+        <QuickAdd onAddTask={onAddTask} onAddCollection={onAddCollection} />
       </div>
 
       <div className="space-y-8">

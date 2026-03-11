@@ -17,7 +17,19 @@ import { Button } from "@/components/ui/button";
 export function StatGrid() {
   const { data: collections = [] } = useCollections();
   const { data: tasks = [] } = useTasks();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("overview-expanded");
+      return saved !== null ? JSON.parse(saved) : true;
+    }
+    return true;
+  });
+
+  const toggleExpanded = () => {
+    const newState = !isExpanded;
+    setIsExpanded(newState);
+    localStorage.setItem("overview-expanded", JSON.stringify(newState));
+  };
 
   const collectionStats = useMemo(() => {
     return collections.map((col) => {
@@ -48,7 +60,7 @@ export function StatGrid() {
           variant="ghost"
           size="icon"
           className="size-6 rounded-full hover:bg-white/5"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={toggleExpanded}
         >
           {isExpanded ? (
             <ChevronUp className="size-4" />

@@ -36,11 +36,11 @@ export function MobileBottomNav() {
                 window.dispatchEvent(new CustomEvent("open-quick-add"));
               }}
               className={cn(
-                "size-14 rounded-full bg-[#1c1e2d] border-4 border-background text-primary shadow-2xl flex items-center justify-center transition-all duration-300",
-                "hover:scale-110 active:scale-95",
+                "size-14 rounded-full bg-primary border-4 border-background text-primary-foreground shadow-2xl flex items-center justify-center transition-all duration-300",
+                "hover:scale-110 active:scale-95 shadow-primary/20",
               )}
             >
-              <Plus size={32} />
+              <Plus size={32} strokeWidth={3} />
             </button>
           </div>
 

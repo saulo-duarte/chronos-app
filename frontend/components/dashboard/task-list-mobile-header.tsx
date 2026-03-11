@@ -46,7 +46,7 @@ export function TaskListMobileHeader({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <h2 className="text-lg font-bold tracking-tight text-foreground truncate mr-4">
+      <h2 className="text-lg font-bold tracking-tight text-foreground truncate mr-4 max-w-[150px] xs:max-w-[200px]">
         {title}
       </h2>
       <div className="flex bg-muted/50 p-0.5 rounded-lg shrink-0">
@@ -57,7 +57,7 @@ export function TaskListMobileHeader({
             className={cn(
               "px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all",
               contentType === tab
-                ? "bg-background text-primary shadow-sm"
+                ? "bg-primary text-primary-foreground shadow-md"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >

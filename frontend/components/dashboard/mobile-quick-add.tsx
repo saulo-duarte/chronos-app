@@ -22,6 +22,7 @@ import { Priority, ResourceType } from "@/types";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import {
@@ -31,7 +32,13 @@ import {
 } from "@/schemas/mobile-quick-add";
 
 interface MobileQuickAddProps {
-  onAddTask: (title: string, priority: Priority, date?: Date) => void;
+  onAddTask: (
+    title: string,
+    priority: Priority,
+    date?: Date,
+    description?: string,
+  ) => void;
+  onAddCollection: (title: string, color: string, description?: string) => void;
   onAddResource: (
     title: string,
     path: string,
@@ -46,13 +53,27 @@ const PRIORITY_CONFIG: Record<Priority, { label: string; color: string }> = {
   HIGH: { label: "High", color: "text-red-400" },
 };
 
+const COLORS = [
+  "#3B82F6", // Blue
+  "#EF4444", // Red
+  "#22C55E", // Green
+  "#F59E0B", // Amber
+  "#6366F1", // Indigo
+  "#8B5CF6", // Violet
+  "#EC4899", // Pink
+  "#06B6D4", // Cyan
+];
+
 export function MobileQuickAdd({
   onAddTask,
+  onAddCollection,
   onAddResource,
 }: MobileQuickAddProps) {
   const { activeNav, contentType } = useDashboardStore();
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<"task" | "resource" | "drawing">("task");
+  const [mode, setMode] = useState<"task" | "resource" | "drawing" | "collection">(
+    "task",
+  );
   const [resType, setResType] = useState<ResourceType>("LINK");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,6 +103,33 @@ export function MobileQuickAdd({
   const currentType = formData.type;
   const selectedPriority =
     currentType === "task" ? (formData as MobileTaskData).priority : "MEDIUM";
+  const selectedColor = currentType === "collection" ? (formData as any).color : COLORS[0];
+
+  const toggleMode = useCallback(
+    (newMode: "task" | "resource" | "drawing" | "collection") => {
+      setMode(newMode);
+      if (newMode === "task") {
+        setValue("type", "task");
+      } else if (newMode === "collection") {
+        setValue("type", "collection");
+        setValue("color" as any, COLORS[0]);
+      } else {
+        setValue("type", "resource");
+        if (newMode === "drawing") {
+          setResType("DRAWING");
+          setValue("resourceType", "DRAWING");
+        } else {
+          // Default to LINK if resource mode is clicked
+          setResType("LINK");
+          setValue("resourceType", "LINK");
+        }
+        if (selectedCollectionId) {
+          setValue("collection_id", selectedCollectionId);
+        }
+      }
+    },
+    [selectedCollectionId, setValue],
+  );
 
   useEffect(() => {
     const handleOpen = () => setOpen(true);
@@ -103,15 +151,18 @@ export function MobileQuickAdd({
         toggleMode("task");
       }
     }
-  }, [open, contentType, selectedCollectionId]);
+  }, [open, contentType, selectedCollectionId, toggleMode]);
 
   const onSubmit = (data: unknown) => {
     const validatedData = data as MobileQuickAddSchema;
-    if (validatedData.type === "task") {
+    if (validatedData.type === "collection") {
+      onAddCollection(validatedData.title, validatedData.color, validatedData.description);
+    } else if (validatedData.type === "task") {
       onAddTask(
         validatedData.title,
         validatedData.priority,
         validatedData.date ? new Date(validatedData.date) : undefined,
+        validatedData.description,
       );
     } else {
       let path = validatedData.url ?? "";
@@ -131,29 +182,6 @@ export function MobileQuickAdd({
     reset();
     setSelectedFile(null);
   };
-
-  const toggleMode = useCallback(
-    (newMode: "task" | "resource" | "drawing") => {
-      setMode(newMode);
-      if (newMode === "task") {
-        setValue("type", "task");
-      } else {
-        setValue("type", "resource");
-        if (newMode === "drawing") {
-          setResType("DRAWING");
-          setValue("resourceType", "DRAWING");
-        } else {
-          // Default to LINK if resource mode is clicked
-          setResType("LINK");
-          setValue("resourceType", "LINK");
-        }
-        if (selectedCollectionId) {
-          setValue("collection_id", selectedCollectionId);
-        }
-      }
-    },
-    [selectedCollectionId, setValue],
-  );
 
   const handleClose = () => {
     setOpen(false);
@@ -187,49 +215,78 @@ export function MobileQuickAdd({
           <div className="size-10 invisible" />
         </header>
 
-        {/* Mode Selector — only visible when in a collection */}
-        {selectedCollectionId && (
-          <div className="px-6 pt-6 pb-2 shrink-0">
-            <div className="bg-[#1c1e2d] p-1 rounded-xl flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => toggleMode("task")}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
-                  mode === "task"
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:text-white",
-                )}
-              >
-                <Plus className="size-3.5" /> Task
-              </button>
-              <button
-                type="button"
-                onClick={() => toggleMode("resource")}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
-                  mode === "resource"
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:text-white",
-                )}
-              >
-                <LinkIcon className="size-3.5" /> Resource
-              </button>
-              <button
-                type="button"
-                onClick={() => toggleMode("drawing")}
-                className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
-                  mode === "drawing"
-                    ? "bg-primary text-primary-foreground shadow-md"
-                    : "text-muted-foreground hover:text-white",
-                )}
-              >
-                <PenTool className="size-3.5" /> Quadro
-              </button>
-            </div>
+        {/* Mode Selector */}
+        <div className="px-6 pt-6 pb-2 shrink-0">
+          <div className="bg-[#1c1e2d] p-1 rounded-xl flex items-center gap-1">
+            {selectedCollectionId ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => toggleMode("task")}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                    mode === "task"
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "text-muted-foreground hover:text-white",
+                  )}
+                >
+                  <Plus className="size-3.5" /> Task
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleMode("resource")}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                    mode === "resource"
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "text-muted-foreground hover:text-white",
+                  )}
+                >
+                  <LinkIcon className="size-3.5" /> Resource
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleMode("drawing")}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                    mode === "drawing"
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "text-muted-foreground hover:text-white",
+                  )}
+                >
+                  <PenTool className="size-3.5" /> Quadro
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => toggleMode("task")}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                    mode === "task"
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "text-muted-foreground hover:text-white",
+                  )}
+                >
+                  <Plus className="size-3.5" /> Task
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleMode("collection")}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all duration-200",
+                    mode === "collection"
+                      ? "bg-primary text-primary-foreground shadow-md"
+                      : "text-muted-foreground hover:text-white",
+                  )}
+                >
+                  <Sparkles className="size-3.5" /> Collection
+                </button>
+              </>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Form Content */}
         <form
@@ -310,6 +367,90 @@ export function MobileQuickAdd({
                     type="datetime-local"
                     {...(register as (name: string) => object)("date")}
                     className="h-12 bg-[#1c1e2d]/60 border-white/8 focus:border-primary/60 rounded-xl"
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <FileText className="size-4 text-muted-foreground" />{" "}
+                    Description
+                    <span className="text-xs text-muted-foreground font-normal">
+                      (optional)
+                    </span>
+                  </label>
+                  <Textarea
+                    {...register("description")}
+                    placeholder="Add details about this task..."
+                    className="min-h-[100px] bg-[#1c1e2d]/60 border-white/8 focus:border-primary/60 rounded-xl resize-none py-3"
+                  />
+                </div>
+              </motion.div>
+            ) : mode === "collection" ? (
+               <motion.div
+                key="collection-form"
+                initial={{ opacity: 0, x: -16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 16 }}
+                transition={{ duration: 0.2 }}
+                className="flex flex-col gap-6"
+              >
+                {/* Title */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-foreground">
+                    Collection Title
+                  </label>
+                  <Input
+                    {...register("title")}
+                    placeholder="e.g. Personal, Work, Fitness..."
+                    className="h-12 text-base bg-[#1c1e2d]/60 border-white/8 focus:border-primary/60 rounded-xl"
+                    autoFocus
+                  />
+                  {errors.title && (
+                    <p className="text-xs text-destructive">
+                      {errors.title.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Color Selector */}
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-foreground">
+                    Color
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {COLORS.map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setValue("color" as any, c)}
+                        className={cn(
+                          "size-8 rounded-full transition-all flex items-center justify-center",
+                          selectedColor === c 
+                            ? "ring-2 ring-primary ring-offset-2 ring-offset-[#0f111a] scale-110 shadow-lg" 
+                            : "hover:scale-105 opacity-80"
+                        )}
+                        style={{ backgroundColor: c }}
+                      >
+                        {selectedColor === c && <Check className="size-4 text-white" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-foreground flex items-center gap-2">
+                    <FileText className="size-4 text-muted-foreground" />{" "}
+                    Description
+                    <span className="text-xs text-muted-foreground font-normal">
+                      (optional)
+                    </span>
+                  </label>
+                  <Textarea
+                    {...register("description")}
+                    placeholder="What is this collection for?"
+                    className="min-h-[100px] bg-[#1c1e2d]/60 border-white/8 focus:border-primary/60 rounded-xl resize-none py-3"
                   />
                 </div>
               </motion.div>
@@ -443,7 +584,7 @@ export function MobileQuickAdd({
                         )}
                       >
                         <UploadCloud
-                          className={cn(
+                           className={cn(
                             "size-6",
                             selectedFile
                               ? "text-primary"
@@ -529,9 +670,11 @@ export function MobileQuickAdd({
               <Sparkles className="size-4" />
               {mode === "task"
                 ? "Create Task"
-                : mode === "drawing"
-                  ? "Create Drawing"
-                  : "Add Resource"}
+                : mode === "collection"
+                  ? "Create Collection"
+                  : mode === "drawing"
+                    ? "Create Drawing"
+                    : "Add Resource"}
               <ChevronRight className="size-4 opacity-60" />
             </Button>
           </div>

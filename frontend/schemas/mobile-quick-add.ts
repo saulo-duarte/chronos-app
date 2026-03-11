@@ -7,6 +7,7 @@ export const mobileQuickAddSchema = z.discriminatedUnion("type", [
     title: z.string().min(1, "O título é obrigatório"),
     priority: z.enum(["LOW", "MEDIUM", "HIGH"]).default("MEDIUM"),
     date: z.string().optional(),
+    description: z.string().optional(),
     collection_id: z.string().optional(),
   }),
   z.object({
@@ -16,6 +17,12 @@ export const mobileQuickAddSchema = z.discriminatedUnion("type", [
     url: z.string().url("URL inválida").optional(),
     tag: z.string().optional(),
     collection_id: z.string().min(1, "A coleção é obrigatória para recursos"),
+  }),
+  z.object({
+    type: z.literal("collection"),
+    title: z.string().min(1, "Title is required"),
+    description: z.string().optional(),
+    color: z.string().default("#3b82f6"),
   }),
 ]);
 

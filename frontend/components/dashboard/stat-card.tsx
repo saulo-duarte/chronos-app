@@ -39,7 +39,7 @@ export function StatCard({
           {count}
         </span>
       </div>
-      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground/70 transition-colors">
+      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground/70 transition-colors truncate w-full text-left">
         {title}
       </span>
     </button>

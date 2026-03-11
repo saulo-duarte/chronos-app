@@ -7,7 +7,9 @@ export function useFilteredTasks(tasks: Task[], currentFilter: FilterType, searc
   return useMemo(() => {
     let result = tasks;
 
-    if (currentFilter === "today") {
+    if (currentFilter === "all") {
+      result = tasks;
+    } else if (currentFilter === "today") {
       result = tasks.filter((t) => {
         if (!t.end_time) return false;
         const date = new Date(t.end_time);

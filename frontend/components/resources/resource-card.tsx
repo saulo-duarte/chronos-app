@@ -107,7 +107,7 @@ export function ResourceCard({
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <h3 className="font-medium text-sm text-foreground truncate">
+          <h3 className="font-medium text-[13px] md:text-sm text-foreground truncate max-w-[200px] xs:max-w-[160px] sm:max-w-none flex-1">
             {resource.title}
           </h3>
           {resource.tag && (
@@ -118,7 +118,7 @@ export function ResourceCard({
                 color: tagStyles?.text,
                 borderColor: tagStyles?.border,
               }}
-              className="h-4 px-1.5 text-[9px] font-bold uppercase tracking-tighter"
+              className="h-4 px-1.5 text-[9px] font-bold uppercase tracking-tighter shrink-0"
             >
               {resource.tag}
             </Badge>
