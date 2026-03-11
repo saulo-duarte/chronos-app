@@ -13,6 +13,7 @@ type Service interface {
 	Create(ctx context.Context, dto *CreateResourceDTO) (*ResourceResponseDTO, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*ResourceResponseDTO, error)
 	GetByCollectionID(ctx context.Context, collectionID uuid.UUID) ([]ResourceResponseDTO, error)
+	GetAll(ctx context.Context) ([]ResourceResponseDTO, error)
 	Update(ctx context.Context, id uuid.UUID, dto *UpdateResourceDTO) (*ResourceResponseDTO, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
@@ -84,6 +85,20 @@ func (s *service) GetByCollectionID(ctx context.Context, collectionID uuid.UUID)
 	}
 
 	resources, err := s.repository.GetByCollectionID(ctx, collectionID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return ToResponseList(resources, s.storage), nil
+}
+
+func (s *service) GetAll(ctx context.Context) ([]ResourceResponseDTO, error) {
+	userID, err := middlewares.GetUserIDFromContext(ctx)
+	if err != nil {
+		return nil, ErrUnauthorized
+	}
+
+	resources, err := s.repository.GetAll(ctx, userID)
 	if err != nil {
 		return nil, err
 	}

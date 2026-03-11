@@ -11,6 +11,7 @@ type Repository interface {
 	Create(ctx context.Context, resource *Resource) error
 	GetByID(ctx context.Context, id uuid.UUID, userID uuid.UUID) (*Resource, error)
 	GetByCollectionID(ctx context.Context, collectionID uuid.UUID, userID uuid.UUID) ([]Resource, error)
+	GetAll(ctx context.Context, userID uuid.UUID) ([]Resource, error)
 	Update(ctx context.Context, resource *Resource) error
 	Delete(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 }
@@ -42,6 +43,15 @@ func (r *repository) GetByCollectionID(ctx context.Context, collectionID uuid.UU
 	var resources []Resource
 	err := r.db.WithContext(ctx).
 		Where("collection_id = ? AND user_id = ? AND deleted_at IS NULL", collectionID, userID).
+		Order("created_at DESC").
+		Find(&resources).Error
+	return resources, err
+}
+
+func (r *repository) GetAll(ctx context.Context, userID uuid.UUID) ([]Resource, error) {
+	var resources []Resource
+	err := r.db.WithContext(ctx).
+		Where("user_id = ? AND deleted_at IS NULL", userID).
 		Order("created_at DESC").
 		Find(&resources).Error
 	return resources, err

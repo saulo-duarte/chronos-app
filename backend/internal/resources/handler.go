@@ -142,6 +142,21 @@ func (h *Handler) GetByCollectionID(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusOK, resources)
 }
 
+func (h *Handler) GetAll(w http.ResponseWriter, r *http.Request) {
+	resources, err := h.service.GetAll(r.Context())
+	if err != nil {
+		switch err {
+		case ErrUnauthorized:
+			response.Error(w, http.StatusUnauthorized, "UNAUTHORIZED", err.Error())
+		default:
+			response.Error(w, http.StatusInternalServerError, "INTERNAL_ERROR", "Erro ao buscar resources")
+		}
+		return
+	}
+
+	response.JSON(w, http.StatusOK, resources)
+}
+
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := uuid.Parse(idStr)

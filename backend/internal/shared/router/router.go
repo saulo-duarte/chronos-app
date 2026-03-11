@@ -75,6 +75,7 @@ func New(cfg RouterConfig) *chi.Mux {
 		r.Route("/resources", func(r chi.Router) {
 			r.Use(middlewares.Auth(cfg.JWTService))
 			r.Post("/", cfg.ResourceHandler.Create)
+			r.Get("/", cfg.ResourceHandler.GetAll)
 			r.Get("/collection/{collectionId}", cfg.ResourceHandler.GetByCollectionID)
 			r.Get("/{id}", cfg.ResourceHandler.GetByID)
 			r.Put("/{id}", cfg.ResourceHandler.Update)
