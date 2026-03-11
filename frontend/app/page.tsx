@@ -22,6 +22,7 @@ import { RadialProgress } from "@/components/dashboard/radial-progress";
 
 import { Header } from "@/components/dashboard/header";
 import { Suspense } from "react";
+import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
 
 function DashboardContent() {
   const {
@@ -82,9 +83,9 @@ function DashboardContent() {
       <Sidebar activeNav={activeNav} onNavChange={setActiveNav} />
 
       <main className="flex flex-1 flex-col overflow-hidden">
-        {activeNav === "dashboard" ||
-        activeNav === "tasks" ||
-        activeNav.startsWith("collection-") ? (
+        {activeNav === "dashboard" ? (
+          <DashboardOverview />
+        ) : activeNav === "tasks" || activeNav.startsWith("collection-") ? (
           <div className="flex flex-col h-full overflow-hidden">
             <Header />
             <StatGrid />

@@ -38,7 +38,7 @@ export function TimeFilterTabs() {
                 ref={isActive ? activeTabRef : null}
                 onClick={() => setFilter(tab.id)}
                 className={cn(
-                  "relative h-14 px-6 flex items-center justify-center text-sm font-bold uppercase tracking-widest transition-all",
+                  "relative h-14 px-6 flex items-center justify-center text-sm font-semibold transition-all",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground",

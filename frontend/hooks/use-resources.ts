@@ -11,6 +11,13 @@ export function useResources(collectionId: string) {
     });
 }
 
+export function useAllResources() {
+    return useQuery({
+        queryKey: queryKeys.resources.all,
+        queryFn: () => resourceService.getAllResources(),
+    });
+}
+
 export function useResource(id: string) {
     return useQuery({
         queryKey: queryKeys.resources.detail(id),

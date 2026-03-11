@@ -11,6 +11,11 @@ export const resourceService = {
     return res.data;
   },
 
+  getAllResources: async () => {
+    const res = await api.get<ResourceSchema[]>("/resources");
+    return res.data;
+  },
+
   getResource: async (id: string) => {
     const res = await api.get<ResourceSchema>(`/resources/${id}`);
     return res.data;
