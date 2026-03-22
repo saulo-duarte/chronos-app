@@ -69,7 +69,7 @@ export function ResourcesList({
     <div className="flex flex-col flex-1 min-h-0 h-full overflow-hidden">
       <div className="flex-1 min-h-0">
         <ScrollArea className="h-full">
-          <div className="px-4 py-2 pb-24 max-w-5xl mx-auto w-full">
+          <div className="px-4 py-2 pb-24 md:px-8 md:py-6 mx-auto w-full">
             {filteredResources.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <div className="flex size-16 items-center justify-center rounded-full bg-muted">
@@ -87,7 +87,7 @@ export function ResourcesList({
                 </p>
               </div>
             ) : (
-              <div className="grid gap-3 sm:grid-cols-1 lg:grid-cols-2">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {filteredResources.map((resource) => (
                   <ResourceCard
                     key={resource.id}

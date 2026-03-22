@@ -12,7 +12,7 @@ func SetAuthCookie(w http.ResponseWriter, token string) {
 		HttpOnly: true,
 		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
-		MaxAge:   3600 * 24 * 7,
+		MaxAge:   3600 * 24 * 30,
 	})
 }
 

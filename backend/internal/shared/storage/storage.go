@@ -14,12 +14,10 @@ import (
 type Client struct {
 	S3Client   *s3.Client
 	BucketName string
-	BaseURL    string // Usado para gerar a URL pública
+	BaseURL    string
 }
 
 func NewClient(endpoint, accessKey, secretKey, bucketName string) *Client {
-	// O region no Supabase geralmente não importa muito para o S3 wrapper,
-	// mas precisa ser preenchido (ex: us-east-1)
 	staticResolver := aws.EndpointResolverWithOptionsFunc(func(service, region string, options ...interface{}) (aws.Endpoint, error) {
 		return aws.Endpoint{
 			URL:           endpoint,
@@ -37,7 +35,7 @@ func NewClient(endpoint, accessKey, secretKey, bucketName string) *Client {
 	}
 
 	client := s3.NewFromConfig(cfg, func(o *s3.Options) {
-		o.UsePathStyle = true // Importante: Supabase exige Path Style
+		o.UsePathStyle = true
 	})
 
 	return &Client{
@@ -79,10 +77,8 @@ func (c *Client) Delete(path string) error {
 }
 
 func (c *Client) GetPublicURL(path string) string {
-	// A URL pública via REST continua sendo o formato mais simples para o navegador
-	// Substituímos o sufixo /s3 para bater no endpoint de objetos públicos
 	restURL := fmt.Sprintf("%s/object/public/%s/%s",
-		fmt.Sprintf("https://%s.supabase.co/storage/v1", "wuhyljcphmegcyfjintk"), // Substitua pelo seu Project Ref
+		fmt.Sprintf("https://%s.supabase.co/storage/v1", "wuhyljcphmegcyfjintk"),
 		c.BucketName,
 		path,
 	)

@@ -4,16 +4,26 @@ import { addDays, format, isSameDay, startOfToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useTaskFilters } from "@/hooks/use-task-filters";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export function HorizontalCalendar() {
   const { selectedDate, setDate } = useTaskFilters();
   const today = startOfToday();
+  const [baseDate, setBaseDate] = useState(today);
   const activeDateRef = useRef<HTMLButtonElement>(null);
 
-  // Generate 30 days starting from today (effectively or previous if needed)
-  // Let's do 7 days before and 30 days after for context
-  const days = Array.from({ length: 45 }, (_, i) => addDays(today, i - 14));
+  // Generate 21 days (3 weeks) centered around baseDate
+  const days = Array.from({ length: 21 }, (_, i) => addDays(baseDate, i - 10));
+
+  const navigateWeeks = (weeks: number) => {
+    setBaseDate((prev) => addDays(prev, weeks * 7));
+  };
+
+  const resetToToday = () => {
+    setBaseDate(today);
+    setDate(format(today, "yyyy-MM-dd"));
+  };
 
   useEffect(() => {
     if (activeDateRef.current) {
@@ -23,10 +33,36 @@ export function HorizontalCalendar() {
         inline: "center",
       });
     }
-  }, [selectedDate]);
+  }, [selectedDate, baseDate]);
 
   return (
     <div className="w-full py-4 border-b border-white/5 bg-background/30 animate-in fade-in slide-in-from-top-2 duration-300">
+      <div className="flex items-center justify-between px-4 mb-4">
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => navigateWeeks(-1)}
+            className="p-1 hover:bg-white/5 rounded-md transition-colors"
+            title="Previous Week"
+          >
+            <ChevronLeft className="size-4 text-muted-foreground" />
+          </button>
+          <button
+            onClick={() => navigateWeeks(1)}
+            className="p-1 hover:bg-white/5 rounded-md transition-colors"
+            title="Next Week"
+          >
+            <ChevronRight className="size-4 text-muted-foreground" />
+          </button>
+        </div>
+        
+        <button 
+          onClick={resetToToday}
+          className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground hover:text-primary transition-colors"
+        >
+          Today
+        </button>
+      </div>
+
       <ScrollArea className="w-full whitespace-nowrap">
         <div className="flex gap-2 px-4 pb-2">
           {days.map((day) => {
