@@ -89,6 +89,14 @@ export function DashboardOverview() {
                 See how you are doing today.
               </p>
             </div>
+            <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-2xl border border-border/50">
+              <div>
+                <p className="text-sm font-medium">Task Progress</p>
+                <p className="text-xs text-muted-foreground">
+                  {metrics.doneTasks} of {metrics.totalTasks} done
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Cards Grid */}

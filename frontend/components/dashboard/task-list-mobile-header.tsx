@@ -42,44 +42,28 @@ export function TaskListMobileHeader({
 
   return (
     <div
-      className="flex md:hidden items-center justify-between px-4 py-3 bg-background/95 backdrop-blur-md z-10 sticky top-0 border-b border-border/40"
+      className="flex md:hidden items-center justify-between px-4 pt-3 pb-2 bg-background/95 backdrop-blur-sm z-10 sticky top-0 border-b border-border/50"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="flex flex-col min-w-0 mr-4">
-        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60 leading-none mb-1">
-          Collection
-        </span>
-        <h2 className="text-lg font-extrabold tracking-tight text-foreground truncate max-w-[120px] xs:max-w-[180px]">
-          {title}
-        </h2>
-      </div>
-
-      <div className="flex bg-muted/30 p-1 rounded-xl shrink-0 border border-white/5">
-        {TAB_ORDER.map((tab, i) => {
-          const isActive = contentType === tab;
-          return (
-            <button
-              key={tab}
-              onClick={() => setContentType(tab)}
-              className={cn(
-                "px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all duration-300 relative",
-                isActive
-                  ? "text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <span className="relative z-10">
-                {["Tasks", "Resources", "Quadros"][i]}
-              </span>
-              {isActive && (
-                <div 
-                  className="absolute inset-0 bg-primary rounded-lg shadow-lg shadow-primary/20 animate-in fade-in zoom-in-95 duration-200" 
-                />
-              )}
-            </button>
-          );
-        })}
+      <h2 className="text-lg font-bold tracking-tight text-foreground truncate mr-4 max-w-[150px] xs:max-w-[200px]">
+        {title}
+      </h2>
+      <div className="flex bg-muted/50 p-0.5 rounded-lg shrink-0">
+        {TAB_ORDER.map((tab, i) => (
+          <button
+            key={tab}
+            onClick={() => setContentType(tab)}
+            className={cn(
+              "px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all",
+              contentType === tab
+                ? "bg-primary text-primary-foreground shadow-md"
+                : "text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {["Tasks", "Resources", "Quadros"][i]}
+          </button>
+        ))}
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { useTaskFilters, FilterType } from "@/hooks/use-task-filters";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 
 const tabs: { id: FilterType; label: string }[] = [
   { id: "all", label: "All" },
@@ -42,23 +41,13 @@ export function TimeFilterTabs() {
                 className={cn(
                   "relative h-14 px-6 flex items-center justify-center text-sm font-semibold transition-all",
                   isActive
-                    ? "text-primary transition-colors"
+                    ? "text-primary"
                     : "text-muted-foreground hover:text-foreground",
                 )}
               >
-                <span className="relative z-10">{tab.label}</span>
+                {tab.label}
                 {isActive && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
-                    className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full shadow-[0_-4px_10px_rgba(94,129,172,0.4)]"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 30,
-                    }}
-                  />
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full shadow-[0_-4px_10px_rgba(94,129,172,0.4)]" />
                 )}
               </button>
             );

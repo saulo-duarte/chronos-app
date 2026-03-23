@@ -23,6 +23,7 @@ import { RadialProgress } from "@/components/dashboard/radial-progress";
 import { Header } from "@/components/dashboard/header";
 import { Suspense } from "react";
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
+import { WeekNavigator } from "@/components/dashboard/week-navigator";
 
 function DashboardContent() {
   const {
@@ -92,6 +93,8 @@ function DashboardContent() {
             {contentType === "tasks" && <TimeFilterTabs />}
             {searchParams.get("filter") === "day" &&
               contentType === "tasks" && <HorizontalCalendar />}
+            {searchParams.get("filter") === "week" &&
+              contentType === "tasks" && <WeekNavigator />}
             <div className="flex-1 overflow-hidden">
               <TaskList title={navTitle} />
             </div>

@@ -312,6 +312,7 @@ export function MobileQuickAdd({
                     {...register("title")}
                     placeholder="e.g. Finish project report..."
                     className="h-12 text-base bg-[#1c1e2d]/60 border-white/8 focus:border-primary/60 rounded-xl"
+                    autoFocus
                   />
                   {errors.title && (
                     <p className="text-xs text-destructive">
@@ -403,6 +404,7 @@ export function MobileQuickAdd({
                     {...register("title")}
                     placeholder="e.g. Personal, Work, Fitness..."
                     className="h-12 text-base bg-[#1c1e2d]/60 border-white/8 focus:border-primary/60 rounded-xl"
+                    autoFocus
                   />
                   {errors.title && (
                     <p className="text-xs text-destructive">
@@ -632,6 +634,7 @@ export function MobileQuickAdd({
                     {...register("title")}
                     placeholder="e.g. Brainstorming session..."
                     className="h-12 text-base bg-[#1c1e2d]/60 border-white/8 focus:border-primary/60 rounded-xl"
+                    autoFocus
                   />
                   {errors.title && (
                     <p className="text-xs text-destructive">

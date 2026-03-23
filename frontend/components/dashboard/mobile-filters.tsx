@@ -82,37 +82,36 @@ export function MobileFilters() {
         </SheetTrigger>
         <SheetContent
           side="bottom"
-          className="rounded-t-3xl p-6 pb-24 min-h-[50vh] max-h-[90vh] overflow-y-auto flex flex-col gap-8 bg-card border-t border-primary/20"
+          className="rounded-t-2xl p-6 pb-24 max-h-[85vh] h-auto overflow-y-auto flex flex-col gap-6"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <div className="mx-auto w-12 h-1.5 bg-muted rounded-full mb-2 opacity-50" />
-          <SheetHeader className="text-left">
-            <SheetTitle className="text-xl font-bold">Filtros</SheetTitle>
+          <SheetHeader>
+            <SheetTitle>Filtros</SheetTitle>
           </SheetHeader>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             {contentType === "tasks" && (
-              <div className="space-y-4">
-                <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">
-                  Intervalo de Tempo
+              <div className="space-y-3">
+                <label className="text-sm font-semibold text-foreground/80">
+                  Intervalo de tempo
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                   {views.map((item) => {
                     const isActive = view === item.id;
                     return (
                       <Button
                         key={item.id}
-                        variant="ghost"
+                        variant="outline"
                         onClick={() => setView(item.id as DashboardView)}
                         className={cn(
-                          "justify-start gap-3 h-14 rounded-2xl border transition-all duration-200",
+                          "justify-start gap-2 h-12",
                           isActive
-                            ? "bg-primary/10 border-primary/50 text-foreground"
-                            : "bg-muted/30 border-transparent text-muted-foreground hover:bg-muted/50",
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "text-muted-foreground",
                         )}
                       >
-                        <item.icon className={cn("size-5", isActive ? "text-primary" : "text-muted-foreground")} />
-                        <span className="font-medium">{item.label}</span>
+                        <item.icon className="size-4" />
+                        {item.label}
                       </Button>
                     );
                   })}
@@ -120,17 +119,17 @@ export function MobileFilters() {
               </div>
             )}
 
-            {contentType === "resources" || contentType === "drawings" ? (
+            {contentType === "resources" ? (
               <>
-                <div className="space-y-4">
-                  <label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">
+                <div className="space-y-3">
+                  <label className="text-sm font-semibold text-foreground/80">
                     Busca
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground/60" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                     <Input
-                      placeholder={contentType === "resources" ? "Título ou tag do recurso..." : "Título ou tag do quadro..."}
-                      className="pl-12 h-14 text-base bg-muted/40 border-transparent focus:border-primary/50 rounded-2xl transition-all"
+                      placeholder="Título ou tag..."
+                      className="pl-9 h-12"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
