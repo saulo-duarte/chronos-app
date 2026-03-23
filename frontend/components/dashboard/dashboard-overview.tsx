@@ -90,6 +90,36 @@ export function DashboardOverview() {
               </p>
             </div>
             <div className="flex items-center gap-4 bg-muted/30 p-4 rounded-2xl border border-border/50">
+              <div className="relative size-16">
+                <svg
+                  className="size-full -rotate-90"
+                  viewBox="0 0 36 36"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="16"
+                    fill="none"
+                    className="stroke-muted"
+                    strokeWidth="3"
+                  />
+                  <circle
+                    cx="18"
+                    cy="18"
+                    r="16"
+                    fill="none"
+                    className="stroke-primary"
+                    strokeWidth="3"
+                    strokeDasharray="100"
+                    strokeDashoffset={100 - metrics.progress}
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-sm font-bold">
+                  {metrics.progress}%
+                </div>
+              </div>
               <div>
                 <p className="text-sm font-medium">Task Progress</p>
                 <p className="text-xs text-muted-foreground">

@@ -29,18 +29,10 @@ export function useTaskFilters() {
     router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }, [searchParams, pathname, router]);
 
-  const setWeekDate = useCallback((date: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("filter", "week");
-    params.set("date", date);
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  }, [searchParams, pathname, router]);
-
   return {
     currentFilter,
     selectedDate,
     setFilter,
     setDate,
-    setWeekDate,
   };
 }

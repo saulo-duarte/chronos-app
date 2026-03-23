@@ -82,8 +82,7 @@ export function MobileFilters() {
         </SheetTrigger>
         <SheetContent
           side="bottom"
-          className="rounded-t-2xl p-6 pb-24 max-h-[85vh] h-auto overflow-y-auto flex flex-col gap-6"
-          onOpenAutoFocus={(e) => e.preventDefault()}
+          className="rounded-t-2xl p-6 pb-24 min-h-[50vh] max-h-[85vh] overflow-y-auto flex flex-col gap-6"
         >
           <SheetHeader>
             <SheetTitle>Filtros</SheetTitle>

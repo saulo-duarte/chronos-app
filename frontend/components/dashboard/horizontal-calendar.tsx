@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { useTaskFilters } from "@/hooks/use-task-filters";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
 
 export function HorizontalCalendar() {
   const { selectedDate, setDate } = useTaskFilters();
@@ -27,12 +26,7 @@ export function HorizontalCalendar() {
   }, [selectedDate]);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: "easeOut" }}
-      className="w-full py-4 border-b border-white/5 bg-background/30"
-    >
+    <div className="w-full py-4 border-b border-white/5 bg-background/30 animate-in fade-in slide-in-from-top-2 duration-300">
       <ScrollArea className="w-full whitespace-nowrap">
         <div className="flex gap-2 px-4 pb-2">
           {days.map((day) => {
@@ -74,6 +68,6 @@ export function HorizontalCalendar() {
         </div>
         <ScrollBar orientation="horizontal" className="hidden" />
       </ScrollArea>
-    </motion.div>
+    </div>
   );
 }

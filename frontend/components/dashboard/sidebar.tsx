@@ -101,7 +101,7 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
             </button>
 
             {collectionsExpanded && (
-              <div className="mt-1 space-y-1 max-h-[300px] overflow-y-auto pr-1">
+              <div className="mt-1 space-y-1">
                 {isLoading ? (
                   <div className="space-y-2 p-3">
                     <div className="h-4 w-3/4 rounded bg-muted/20 animate-pulse" />
