@@ -44,6 +44,8 @@ func New(cfg RouterConfig) *chi.Mux {
 		r.Route("/auth", func(r chi.Router) {
 			r.Get("/login", cfg.AuthHandler.Login)
 			r.Get("/callback", cfg.AuthHandler.GoogleCallback)
+			r.Post("/register", cfg.AuthHandler.RegisterWithEmail)
+			r.Post("/login/email", cfg.AuthHandler.LoginWithEmail)
 			r.Post("/logout", cfg.AuthHandler.Logout)
 
 			r.Group(func(r chi.Router) {

@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	sharedauth "github.com/saulo-duarte/chronos/internal/shared/auth"
 	"golang.org/x/oauth2"
@@ -19,7 +20,7 @@ func NewAuthService(r *AuthRepository, j *sharedauth.TokenService) *AuthService 
 
 func (s *AuthService) AuthenticateGoogleUser(googleUser GoogleUserDTO) (*LoginResponse, error) {
 	user := &User{
-		GoogleID: googleUser.ID,
+		GoogleID: &googleUser.ID,
 		Email:    googleUser.Email,
 		Name:     googleUser.Name,
 	}
@@ -37,6 +38,53 @@ func (s *AuthService) AuthenticateGoogleUser(googleUser GoogleUserDTO) (*LoginRe
 		AccessToken: token,
 		TokenType:   "Bearer",
 	}, nil
+}
+
+func (s *AuthService) RegisterWithEmail(dto RegisterDTO) (*LoginResponse, error) {
+	hash, err := HashPassword(dto.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	user := &User{
+		Email:        dto.Email,
+		Name:         dto.Name,
+		PasswordHash: &hash,
+	}
+
+	if err := s.repo.CreateUser(user); err != nil {
+		return nil, err
+	}
+
+	token, err := s.jwtService.Generate(user.ID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	return &LoginResponse{AccessToken: token, TokenType: "Bearer"}, nil
+}
+
+func (s *AuthService) LoginWithEmail(dto LoginWithEmailDTO) (*LoginResponse, error) {
+	user, err := s.repo.GetByEmail(dto.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	if user.PasswordHash == nil {
+		return nil, errors.New("invalid credentials or user registered via OAuth")
+	}
+
+	ok, err := VerifyPassword(dto.Password, *user.PasswordHash)
+	if err != nil || !ok {
+		return nil, errors.New("invalid credentials")
+	}
+
+	token, err := s.jwtService.Generate(user.ID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	return &LoginResponse{AccessToken: token, TokenType: "Bearer"}, nil
 }
 
 func (s *AuthService) VerifyGoogleCode(ctx context.Context, config *oauth2.Config, code string) (*GoogleUserDTO, error) {

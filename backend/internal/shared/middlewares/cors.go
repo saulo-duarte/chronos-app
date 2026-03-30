@@ -10,7 +10,7 @@ func CORS(next http.Handler) http.Handler {
 		origin := r.Header.Get("Origin")
 
 		if os.Getenv("RUN_MODE") == "local" {
-			if origin == "http://localhost:3001" || origin == "http://localhost:3000" {
+			if origin == "http://localhost:3001" || origin == "http://localhost:3000" || origin == "http://localhost:8081" {
 				w.Header().Set("Access-Control-Allow-Origin", origin)
 			}
 		} else {

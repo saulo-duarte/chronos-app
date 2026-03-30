@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -11,6 +12,7 @@ import (
 	"github.com/saulo-duarte/chronos/internal/shared/response"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
+	"strings"
 )
 
 type AuthHandler struct {
@@ -35,11 +37,28 @@ func NewAuthHandler(service *AuthService, cfg *config.Config) *AuthHandler {
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	url := h.oauthConfig.AuthCodeURL("state")
+	// Allow the popup to communicate back for OAuth
+	w.Header().Set("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
+	
+	platform := r.URL.Query().Get("platform")
+	redirectURI := r.URL.Query().Get("redirect_to")
+	
+	state := "state"
+	if platform == "mobile" {
+		if redirectURI != "" {
+			state = "mobile|" + redirectURI
+		} else {
+			state = "mobile"
+		}
+	}
+	url := h.oauthConfig.AuthCodeURL(state)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
+	// Allow the popup to communicate back for OAuth
+	w.Header().Set("Cross-Origin-Opener-Policy", "same-origin-allow-popups")
+
 	code := r.URL.Query().Get("code")
 	if code == "" {
 		response.Error(w, http.StatusBadRequest, "MISSING_CODE", "Código não fornecido")
@@ -60,8 +79,28 @@ func (h *AuthHandler) GoogleCallback(w http.ResponseWriter, r *http.Request) {
 
 	sharedauth.SetAuthCookie(w, result.AccessToken)
 
-	runMode := os.Getenv("RUN_MODE")
+	state := r.URL.Query().Get("state")
+	if len(state) >= 6 && state[:6] == "mobile" {
+		mobileRedirectURL := "chronos-mobile://auth-callback"
+		
+		// Check for dynamic redirect URI in state (e.g., mobile|http://localhost:8081)
+		if len(state) > 7 && state[6] == '|' {
+			mobileRedirectURL = state[7:]
+		}
 
+		// Ensure we have a query separator
+		separator := "?"
+		if strings.Contains(mobileRedirectURL, "?") {
+			separator = "&"
+		}
+		
+		target := mobileRedirectURL + separator + "token=" + result.AccessToken
+		log.Printf("[AUTH_DEBUG] Redirecionando mobile para: %s", target)
+		http.Redirect(w, r, target, http.StatusTemporaryRedirect)
+		return
+	}
+
+	runMode := os.Getenv("RUN_MODE")
 	redirectURL := "https://chronosapp.site"
 
 	if runMode == "local" {
@@ -97,4 +136,38 @@ func (h *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuthHandler) GetService() *AuthService {
 	return h.service
+}
+
+func (h *AuthHandler) RegisterWithEmail(w http.ResponseWriter, r *http.Request) {
+	var dto RegisterDTO
+	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
+		response.Error(w, http.StatusBadRequest, "INVALID_REQUEST", "Dados inválidos")
+		return
+	}
+
+	result, err := h.service.RegisterWithEmail(dto)
+	if err != nil {
+		response.Error(w, http.StatusInternalServerError, "REGISTRATION_FAILED", err.Error())
+		return
+	}
+
+	sharedauth.SetAuthCookie(w, result.AccessToken)
+	response.JSON(w, http.StatusOK, result)
+}
+
+func (h *AuthHandler) LoginWithEmail(w http.ResponseWriter, r *http.Request) {
+	var dto LoginWithEmailDTO
+	if err := json.NewDecoder(r.Body).Decode(&dto); err != nil {
+		response.Error(w, http.StatusBadRequest, "INVALID_REQUEST", "Dados inválidos")
+		return
+	}
+
+	result, err := h.service.LoginWithEmail(dto)
+	if err != nil {
+		response.Error(w, http.StatusUnauthorized, "LOGIN_FAILED", "Credenciais inválidas")
+		return
+	}
+
+	sharedauth.SetAuthCookie(w, result.AccessToken)
+	response.JSON(w, http.StatusOK, result)
 }
