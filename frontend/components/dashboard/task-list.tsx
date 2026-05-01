@@ -22,6 +22,7 @@ import { TaskListHeader } from "./task-list-header";
 import { TaskListItems } from "./task-list-items";
 import { useFilteredTasks } from "@/hooks/use-filtered-tasks";
 import { TaskListMobileHeader } from "./task-list-mobile-header";
+import { QuickAdd } from "./quick-add";
 
 interface TaskListProps {
   title: string;
@@ -150,6 +151,26 @@ export function TaskList({ title }: TaskListProps) {
               />
             )}
 
+            <div className="hidden md:block px-4 md:px-8 mt-4 mb-4 mx-auto w-full max-w-full">
+              <QuickAdd 
+                onAddTask={(title, priority, date, description) => {
+                  createTaskMutation.mutate({
+                    title,
+                    priority,
+                    status: "PENDING",
+                    start_time: new Date().toISOString(),
+                    end_time: date ? date.toISOString() : undefined,
+                    description,
+                    collection_id: selectedCollectionId,
+                  });
+                }}
+                onAddCollection={(title, color, description) => {
+                  createCollectionMutation.mutate({ title, color, description });
+                }}
+                onAddResource={handleAddResource}
+              />
+            </div>
+
             <div className="w-full flex-1 flex flex-col min-h-0">
               {contentType === "tasks" || !selectedCollectionId ? (
                 <TaskListItems
@@ -171,6 +192,7 @@ export function TaskList({ title }: TaskListProps) {
                   onAddCollection={(title, color, description) => {
                     createCollectionMutation.mutate({ title, color, description });
                   }}
+                  onAddResource={handleAddResource}
                 />
               ) : (
                 <div className="flex-1 px-0 py-2">

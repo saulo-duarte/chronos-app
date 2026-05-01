@@ -7,7 +7,7 @@ import {
   AlertCircle,
   ListChecks,
 } from "lucide-react";
-import { Task, Collection, Priority, Status } from "@/types";
+import { Task, Collection, Priority, Status, ResourceType } from "@/types";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { Button } from "@/components/ui/button";
 import { TaskItem } from "./task-item";
@@ -21,6 +21,7 @@ interface TaskListItemsProps {
   onToggleComplete: (id: string, status: Status) => void;
   onAddTask: (title: string, priority: Priority, date?: Date, description?: string) => void;
   onAddCollection: (title: string, color: string, description?: string) => void;
+  onAddResource?: (title: string, url: string, type: ResourceType, tag?: string) => void;
 }
 
 export function TaskListItems({
@@ -29,6 +30,7 @@ export function TaskListItems({
   onToggleComplete,
   onAddTask,
   onAddCollection,
+  onAddResource,
 }: TaskListItemsProps) {
   const { currentFilter } = useTaskFilters();
   const { selectedDate, setSelectedDate, selectedTaskId, setSelectedTaskId } =
@@ -36,7 +38,7 @@ export function TaskListItems({
   const keys = Object.keys(groups).sort();
 
   return (
-    <div className="px-4 py-2 md:px-8 md:py-6 mx-auto w-full">
+    <div className="px-4 py-2 md:px-8 md:py-6 mx-auto w-full max-w-full">
       {currentFilter === "week" && (
         <div className="md:hidden flex items-center justify-between mb-4 px-2">
           <Button
@@ -61,9 +63,7 @@ export function TaskListItems({
         </div>
       )}
 
-      <div className="hidden md:block mb-8">
-        <QuickAdd onAddTask={onAddTask} onAddCollection={onAddCollection} />
-      </div>
+
 
       <div className="space-y-8">
         {keys.length > 0 ? (

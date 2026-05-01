@@ -13,6 +13,7 @@ import (
 	sharedauth "github.com/saulo-duarte/chronos/internal/shared/auth"
 	"github.com/saulo-duarte/chronos/internal/shared/middlewares"
 	"github.com/saulo-duarte/chronos/internal/tasks"
+	"github.com/saulo-duarte/chronos/internal/objectives"
 )
 
 type RouterConfig struct {
@@ -22,6 +23,7 @@ type RouterConfig struct {
 	CollectionHandler *collections.Handler
 	ResourceHandler   *resources.Handler
 	LeetCodeHandler   *leetcode.Handler
+	ObjectiveHandler  *objectives.Handler
 	JWTService        *sharedauth.TokenService
 }
 
@@ -59,7 +61,7 @@ func New(cfg RouterConfig) *chi.Mux {
 			r.Post("/", cfg.TaskHandler.Create)
 			r.Get("/", cfg.TaskHandler.GetAll)
 			r.Get("/{id}", cfg.TaskHandler.GetByID)
-			r.Put("/{id}", cfg.TaskHandler.Update)
+			r.Patch("/{id}", cfg.TaskHandler.Update)
 			r.Patch("/{id}/status", cfg.TaskHandler.UpdateStatus)
 			r.Delete("/{id}", cfg.TaskHandler.Delete)
 			r.Get("/collection/{collectionID}", cfg.TaskHandler.GetByCollection)
@@ -70,7 +72,7 @@ func New(cfg RouterConfig) *chi.Mux {
 			r.Post("/", cfg.CollectionHandler.Create)
 			r.Get("/", cfg.CollectionHandler.GetAll)
 			r.Get("/{id}", cfg.CollectionHandler.GetByID)
-			r.Put("/{id}", cfg.CollectionHandler.Update)
+			r.Patch("/{id}", cfg.CollectionHandler.Update)
 			r.Delete("/{id}", cfg.CollectionHandler.Delete)
 		})
 
@@ -80,7 +82,7 @@ func New(cfg RouterConfig) *chi.Mux {
 			r.Get("/", cfg.ResourceHandler.GetAll)
 			r.Get("/collection/{collectionId}", cfg.ResourceHandler.GetByCollectionID)
 			r.Get("/{id}", cfg.ResourceHandler.GetByID)
-			r.Put("/{id}", cfg.ResourceHandler.Update)
+			r.Patch("/{id}", cfg.ResourceHandler.Update)
 			r.Delete("/{id}", cfg.ResourceHandler.Delete)
 		})
 
@@ -90,9 +92,18 @@ func New(cfg RouterConfig) *chi.Mux {
 			r.Get("/", cfg.LeetCodeHandler.GetAll)
 			r.Get("/due", cfg.LeetCodeHandler.GetDue)
 			r.Get("/{id}", cfg.LeetCodeHandler.GetByID)
-			r.Put("/{id}", cfg.LeetCodeHandler.Update)
+			r.Patch("/{id}", cfg.LeetCodeHandler.Update)
 			r.Post("/{id}/review", cfg.LeetCodeHandler.Review)
 			r.Delete("/{id}", cfg.LeetCodeHandler.Delete)
+		})
+
+		r.Route("/objectives", func(r chi.Router) {
+			r.Use(middlewares.Auth(cfg.JWTService))
+			r.Post("/", cfg.ObjectiveHandler.Create)
+			r.Get("/", cfg.ObjectiveHandler.GetAll)
+			r.Get("/{id}", cfg.ObjectiveHandler.GetByID)
+			r.Patch("/{id}", cfg.ObjectiveHandler.Update)
+			r.Delete("/{id}", cfg.ObjectiveHandler.Delete)
 		})
 	})
 

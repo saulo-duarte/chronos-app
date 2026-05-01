@@ -14,6 +14,7 @@ import {
   Brain,
   PanelLeftClose,
   PanelLeftOpen,
+  Target,
 } from "lucide-react";
 import { useCollections } from "@/hooks/use-collections";
 import { CollectionItem } from "./collection-item";
@@ -28,6 +29,7 @@ interface SidebarProps {
 const navItems = [
   { id: "tasks", label: "Tasks", icon: ListTodo },
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "objectives", label: "Objectives", icon: Target },
   { id: "mastery", label: "Mastery", icon: Brain },
 ];
 
@@ -45,12 +47,12 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
     <div className="flex h-full flex-col bg-transparent">
       <div
         className={cn(
-          "flex items-center gap-2 border-b border-border px-4 py-5",
+          "flex h-[72px] items-center gap-2 border-b border-border/50 px-4",
           isCollapsedDesktop && "justify-center px-0",
         )}
       >
-        <div className="flex size-8 items-center justify-center rounded-lg bg-primary shrink-0">
-          <Clock className="size-4 text-primary-foreground" />
+        <div className="flex size-10 items-center justify-center rounded-xl bg-primary shrink-0 shadow-lg shadow-primary/20">
+          <Clock className="size-5 text-primary-foreground" />
         </div>
         {!isCollapsedDesktop && (
           <span className="text-lg font-semibold text-foreground tracking-tight">
@@ -101,27 +103,29 @@ export function Sidebar({ activeNav, onNavChange }: SidebarProps) {
             </button>
 
             {collectionsExpanded && (
-              <div className="mt-1 space-y-1">
-                {isLoading ? (
-                  <div className="space-y-2 p-3">
-                    <div className="h-4 w-3/4 rounded bg-muted/20 animate-pulse" />
-                    <div className="h-4 w-1/2 rounded bg-muted/20 animate-pulse" />
-                    <div className="h-4 w-2/3 rounded bg-muted/20 animate-pulse" />
-                  </div>
-                ) : (
-                  collections.map((collection) => (
-                    <CollectionItem
-                      key={collection.id}
-                      collection={collection}
-                      isActive={activeNav === `collection-${collection.id}`}
-                      onClick={() =>
-                        handleNavClick(`collection-${collection.id}`)
-                      }
-                      onEdit={(c) => onOpen(c)}
-                    />
-                  ))
-                )}
-              </div>
+              <ScrollArea className="mt-1 max-h-[300px] pr-3">
+                <div className="space-y-1">
+                  {isLoading ? (
+                    <div className="space-y-2 p-3">
+                      <div className="h-4 w-3/4 rounded bg-muted/20 animate-pulse" />
+                      <div className="h-4 w-1/2 rounded bg-muted/20 animate-pulse" />
+                      <div className="h-4 w-2/3 rounded bg-muted/20 animate-pulse" />
+                    </div>
+                  ) : (
+                    collections.map((collection) => (
+                      <CollectionItem
+                        key={collection.id}
+                        collection={collection}
+                        isActive={activeNav === `collection-${collection.id}`}
+                        onClick={() =>
+                          handleNavClick(`collection-${collection.id}`)
+                        }
+                        onEdit={(c) => onOpen(c)}
+                      />
+                    ))
+                  )}
+                </div>
+              </ScrollArea>
             )}
           </div>
         )}

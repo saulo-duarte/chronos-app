@@ -24,7 +24,7 @@ export const taskService = {
   },
 
   updateTask: async (id: string, dto: UpdateTaskSchema) => {
-    const res = await api.put<TaskSchema>(`/tasks/${id}`, dto);
+    const res = await api.patch<TaskSchema>(`/tasks/${id}`, dto);
     return res.data;
   },
 

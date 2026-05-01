@@ -27,7 +27,7 @@ export const resourceService = {
   },
 
   updateResource: async (id: string, dto: UpdateResourceSchema) => {
-    const res = await api.put<ResourceSchema>(`/resources/${id}`, dto);
+    const res = await api.patch<ResourceSchema>(`/resources/${id}`, dto);
     return res.data;
   },
 

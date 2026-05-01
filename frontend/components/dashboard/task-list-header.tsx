@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/select";
 import { Priority, Status } from "@/types";
 import { cn } from "@/lib/utils";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface TaskListHeaderProps {
   title: string;
@@ -33,8 +35,8 @@ export function TaskListHeader({
   } = useDashboardStore();
 
   return (
-    <header className="hidden md:flex flex-col border-b border-border backdrop-blur-md transition-colors duration-500">
-      <div className="px-4 py-4 md:px-8">
+    <header className="hidden md:flex flex-col border-b border-border/50 backdrop-blur-md transition-colors duration-500">
+      <div className="px-4 py-2 md:px-8">
         <div className="flex items-center justify-between gap-6">
           {/* Título e Contador */}
           <div className="flex items-end gap-6">
@@ -48,10 +50,6 @@ export function TaskListHeader({
                   {title}
                 </span>
               </h1>
-              <p className="text-xs text-muted-foreground whitespace-nowrap">
-                {incompleteCount}{" "}
-                {incompleteCount === 1 ? "task remaining" : "tasks remaining"}
-              </p>
             </div>
 
             {/* Tabs de Seleção */}
@@ -61,24 +59,24 @@ export function TaskListHeader({
                 onValueChange={(v) => {
                   setContentType(v as "tasks" | "resources" | "drawings");
                 }}
-                className="bg-muted/50 p-1 rounded-full mb-0.5 shrink-0"
+                className="bg-muted/50 p-0.5 rounded-lg mb-0.5 shrink-0"
               >
-                <TabsList className="h-7 bg-transparent border-none">
+                <TabsList className="h-8 bg-transparent border-none gap-1">
                   <TabsTrigger
                     value="tasks"
-                    className="rounded-full px-4 text-[10px] uppercase font-bold tracking-wider h-5"
+                    className="rounded-md px-3 text-xs font-semibold tracking-tight h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 transition-all"
                   >
                     Tasks
                   </TabsTrigger>
                   <TabsTrigger
                     value="resources"
-                    className="rounded-full px-4 text-[10px] uppercase font-bold tracking-wider h-5"
+                    className="rounded-md px-3 text-xs font-semibold tracking-tight h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 transition-all"
                   >
                     Resources
                   </TabsTrigger>
                   <TabsTrigger
                     value="drawings"
-                    className="rounded-full px-4 text-[10px] uppercase font-bold tracking-wider h-5"
+                    className="rounded-md px-3 text-xs font-semibold tracking-tight h-7 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20 transition-all"
                   >
                     Quadros
                   </TabsTrigger>
@@ -119,6 +117,23 @@ export function TaskListHeader({
                 </SelectContent>
               </Select>
             </div>
+          )}
+
+          {/* Botões de Ação para Resources e Drawings */}
+          {selectedCollectionId && contentType !== "tasks" && (
+             <div className="flex items-center gap-2">
+                <Button 
+                  size="sm" 
+                  className="h-8 gap-2 rounded-md"
+                  onClick={() => {
+                    // This will now focus the QuickAdd input which we'll move to TaskList
+                    (document.querySelector('#quick-add-input') as HTMLElement)?.focus();
+                  }}
+                >
+                  <Plus className="size-4" />
+                  {contentType === "resources" ? "Novo Link" : "Novo Quadro"}
+                </Button>
+             </div>
           )}
         </div>
       </div>

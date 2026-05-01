@@ -51,7 +51,7 @@ export function StatGrid() {
   }, [tasks]);
 
   return (
-    <div className="w-full px-4 md:px-8 pt-4 transition-all">
+    <div className="w-full px-4 md:px-8 pt-2 transition-all">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-muted-foreground">
           Overview
@@ -72,7 +72,7 @@ export function StatGrid() {
 
       {isExpanded && (
         <ScrollArea className="w-full whitespace-nowrap animate-in slide-in-from-top-2 fade-in duration-300">
-          <div className="flex gap-3 pb-4 pt-1">
+          <div className="flex gap-2 pb-2 pt-1">
             <StatCard
               title="All Tasks"
               count={totalPending}

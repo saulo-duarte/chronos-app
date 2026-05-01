@@ -22,7 +22,7 @@ export const collectionService = {
   },
 
   updateCollection: async (id: string, dto: UpdateCollectionSchema) => {
-    const res = await api.put<CollectionSchema>(`/collections/${id}`, dto);
+    const res = await api.patch<CollectionSchema>(`/collections/${id}`, dto);
     return res.data;
   },
 

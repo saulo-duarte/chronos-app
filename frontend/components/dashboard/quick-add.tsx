@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, type KeyboardEvent, useRef } from "react";
-import { Plus, Calendar, Flag, SendHorizontal, X } from "lucide-react";
-import { Priority } from "@/types";
+import { useState, type KeyboardEvent, useRef, useEffect } from "react";
+import { Plus, Calendar, Flag, SendHorizontal, X, Link as LinkIcon, Palette } from "lucide-react";
+import { Priority, ResourceType } from "@/types";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
 import {
   Select,
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 interface QuickAddProps {
   onAddTask: (title: string, priority: Priority, startTime?: Date, description?: string) => void;
   onAddCollection: (title: string, color: string, description?: string) => void;
+  onAddResource?: (title: string, url: string, type: ResourceType, tag?: string) => void;
 }
 
 const COLORS = [
@@ -30,18 +31,37 @@ const COLORS = [
   "#06B6D4", // Cyan
 ];
 
-export function QuickAdd({ onAddTask, onAddCollection }: QuickAddProps) {
+export function QuickAdd({ onAddTask, onAddCollection, onAddResource }: QuickAddProps) {
+  const { activeNav, contentType } = useDashboardStore();
   const [value, setValue] = useState("");
   const [description, setDescription] = useState("");
   const [priority, setPriority] = useState<Priority>("MEDIUM");
   const [startTime, setStartTime] = useState<string>("");
+  const [url, setUrl] = useState("");
+  const [tag, setTag] = useState("");
   const [color, setColor] = useState(COLORS[0]);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [mode, setMode] = useState<"task" | "collection">("task");
+  
+  const [mode, setMode] = useState<"task" | "collection" | "resource" | "drawing">(() => {
+    if (activeNav.startsWith("collection-")) {
+      if (contentType === "resources") return "resource";
+      if (contentType === "drawings") return "drawing";
+    }
+    return "task";
+  });
+
   const inputRef = useRef<HTMLInputElement>(null);
-  const { activeNav } = useDashboardStore();
+
+  useEffect(() => {
+    if (activeNav.startsWith("collection-")) {
+      if (contentType === "resources") setMode("resource");
+      else if (contentType === "drawings") setMode("drawing");
+      else setMode("task");
+    }
+  }, [contentType, activeNav]);
 
   const isHome = activeNav === "tasks" || activeNav === "dashboard";
+  const isCollection = activeNav.startsWith("collection-");
 
   const handleSubmit = () => {
     if (!value.trim()) return;
@@ -53,14 +73,20 @@ export function QuickAdd({ onAddTask, onAddCollection }: QuickAddProps) {
         startTime ? new Date(startTime) : undefined,
         description.trim() || undefined
       );
-    } else {
+    } else if (mode === "collection") {
       onAddCollection(value.trim(), color, description.trim() || undefined);
+    } else if (mode === "resource") {
+      onAddResource?.(value.trim(), url.trim(), "LINK", tag.trim() || undefined);
+    } else if (mode === "drawing") {
+      onAddResource?.(value.trim(), "", "DRAWING", tag.trim() || undefined);
     }
 
     setValue("");
     setDescription("");
     setPriority("MEDIUM");
     setStartTime("");
+    setUrl("");
+    setTag("");
     setColor(COLORS[0]);
     setIsExpanded(false);
   };
@@ -105,39 +131,70 @@ export function QuickAdd({ onAddTask, onAddCollection }: QuickAddProps) {
           />
         </div>
 
-        <input
-          ref={inputRef}
-          type="text"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onFocus={() => setIsExpanded(true)}
-          onKeyDown={handleKeyDown}
-          placeholder={mode === "task" ? "Add a task..." : "Add a collection..."}
-          className="flex-1 bg-transparent text-sm font-medium text-foreground placeholder:text-muted-foreground outline-none md:text-base"
-        />
+          <input
+            id="quick-add-input"
+            ref={inputRef}
+            type="text"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onFocus={() => setIsExpanded(true)}
+            onKeyDown={handleKeyDown}
+            placeholder={
+              mode === "task" ? "Add a task..." : 
+              mode === "collection" ? "Add a collection..." :
+              mode === "resource" ? "Add a resource link..." : "Add a drawing board..."
+            }
+            className="flex-1 bg-transparent text-sm font-medium text-foreground placeholder:text-muted-foreground outline-none md:text-base"
+          />
 
         {isExpanded && (
           <div className="flex items-center gap-2">
-            {isHome && (
+            {(isHome || isCollection) && (
               <div className="flex bg-muted/50 p-1 rounded-full border border-border/50">
-                <button
-                  onClick={() => setMode("task")}
-                  className={cn(
-                    "px-3 py-1 text-[10px] font-bold uppercase rounded-full transition-all",
-                    mode === "task" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
-                  )}
-                >
-                  Task
-                </button>
-                <button
-                  onClick={() => setMode("collection")}
-                  className={cn(
-                    "px-3 py-1 text-[10px] font-bold uppercase rounded-full transition-all",
-                    mode === "collection" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
-                  )}
-                >
-                  Col
-                </button>
+                {(isHome || (isCollection && contentType === "tasks")) && (
+                  <button
+                    onClick={() => setMode("task")}
+                    className={cn(
+                      "px-3 py-1 text-[10px] font-bold uppercase rounded-full transition-all",
+                      mode === "task" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+                    )}
+                  >
+                    Task
+                  </button>
+                )}
+                {isHome && (
+                  <button
+                    onClick={() => setMode("collection")}
+                    className={cn(
+                      "px-3 py-1 text-[10px] font-bold uppercase rounded-full transition-all",
+                      mode === "collection" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+                    )}
+                  >
+                    Col
+                  </button>
+                )}
+                {isCollection && contentType === "resources" && (
+                  <button
+                    onClick={() => setMode("resource")}
+                    className={cn(
+                      "px-3 py-1 text-[10px] font-bold uppercase rounded-full transition-all",
+                      mode === "resource" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+                    )}
+                  >
+                    Link
+                  </button>
+                )}
+                {isCollection && contentType === "drawings" && (
+                  <button
+                    onClick={() => setMode("drawing")}
+                    className={cn(
+                      "px-3 py-1 text-[10px] font-bold uppercase rounded-full transition-all",
+                      mode === "drawing" ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
+                    )}
+                  >
+                    Quadro
+                  </button>
+                )}
               </div>
             )}
             <Button
@@ -198,7 +255,7 @@ export function QuickAdd({ onAddTask, onAddCollection }: QuickAddProps) {
                     />
                   </div>
                 </>
-              ) : (
+              ) : mode === "collection" ? (
                 <div className="flex items-center gap-2 bg-muted/50 px-3 py-1 rounded-full border border-border/50">
                   <span className="text-[10px] uppercase font-bold text-muted-foreground mr-1">Color</span>
                   <div className="flex items-center gap-1.5">
@@ -213,6 +270,35 @@ export function QuickAdd({ onAddTask, onAddCollection }: QuickAddProps) {
                         style={{ backgroundColor: c }}
                       />
                     ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-4">
+                  {mode === "resource" && (
+                    <div className="relative">
+                      <div className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2">
+                        <LinkIcon className="size-3.5 text-muted-foreground" />
+                      </div>
+                      <input
+                        type="url"
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        placeholder="https://..."
+                        className="h-8 w-[180px] rounded-md bg-muted/50 pl-8 text-[10px] outline-none transition-all hover:bg-muted md:text-xs border-none"
+                      />
+                    </div>
+                  )}
+                  <div className="relative">
+                    <div className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2">
+                      <Palette className="size-3.5 text-muted-foreground" />
+                    </div>
+                    <input
+                      type="text"
+                      value={tag}
+                      onChange={(e) => setTag(e.target.value)}
+                      placeholder="Tag (optional)"
+                      className="h-8 w-[120px] rounded-md bg-muted/50 pl-8 text-[10px] outline-none transition-all hover:bg-muted md:text-xs border-none"
+                    />
                   </div>
                 </div>
               )}

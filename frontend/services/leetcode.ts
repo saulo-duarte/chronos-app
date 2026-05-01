@@ -23,7 +23,7 @@ export const leetcodeService = {
   },
 
   updateProblem: async (id: string, dto: UpdateLeetCodeProblemSchema) => {
-    const res = await api.put<LeetCodeProblemSchema>(`/leetcode/${id}`, dto);
+    const res = await api.patch<LeetCodeProblemSchema>(`/leetcode/${id}`, dto);
     return res.data;
   },
 

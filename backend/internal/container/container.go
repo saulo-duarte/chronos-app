@@ -13,6 +13,7 @@ import (
 	"github.com/saulo-duarte/chronos/internal/shared/config"
 	"github.com/saulo-duarte/chronos/internal/shared/storage"
 	"github.com/saulo-duarte/chronos/internal/tasks"
+	"github.com/saulo-duarte/chronos/internal/objectives"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -26,6 +27,7 @@ type Container struct {
 	CollectionHandler *collections.Handler
 	ResourceHandler   *resources.Handler
 	LeetCodeHandler   *leetcode.Handler
+	ObjectiveHandler  *objectives.Handler
 	JWTService        *sharedauth.TokenService
 }
 
@@ -72,6 +74,10 @@ func New() *Container {
 		log.Fatalf("Falha ao migrar LeetCodeProblem: %v", err)
 	}
 
+	if err := db.AutoMigrate(&objectives.Objective{}); err != nil {
+		log.Fatalf("Falha ao migrar Objective: %v", err)
+	}
+
 	jwtSvc := sharedauth.NewTokenService(cfg.JWTSecret)
 	storageSvc := storage.NewClient(
 		cfg.StorageURL,
@@ -85,6 +91,7 @@ func New() *Container {
 	collectionsContainer := collections.NewContainer(db)
 	resourcesContainer := resources.NewContainer(db, storageSvc)
 	leetcodeContainer := leetcode.NewContainer(db)
+	objectivesContainer := objectives.NewContainer(db)
 
 	return &Container{
 		Config:            cfg,
@@ -95,6 +102,7 @@ func New() *Container {
 		CollectionHandler: collectionsContainer.Handler,
 		ResourceHandler:   resourcesContainer.Handler,
 		LeetCodeHandler:   leetcodeContainer.Handler,
+		ObjectiveHandler:  objectivesContainer.Handler,
 		JWTService:        jwtSvc,
 	}
 }

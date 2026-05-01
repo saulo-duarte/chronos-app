@@ -23,6 +23,7 @@ import { RadialProgress } from "@/components/dashboard/radial-progress";
 import { Header } from "@/components/dashboard/header";
 import { Suspense } from "react";
 import { DashboardOverview } from "@/components/dashboard/dashboard-overview";
+import { ObjectivesList } from "@/components/objectives/objectives-list";
 
 function DashboardContent() {
   const {
@@ -88,7 +89,6 @@ function DashboardContent() {
         ) : activeNav === "tasks" || activeNav.startsWith("collection-") ? (
           <div className="flex flex-col h-full overflow-hidden">
             <Header />
-            <StatGrid />
             {contentType === "tasks" && <TimeFilterTabs />}
             {searchParams.get("filter") === "day" &&
               contentType === "tasks" && <HorizontalCalendar />}
@@ -98,6 +98,13 @@ function DashboardContent() {
           </div>
         ) : activeNav === "mastery" ? (
           <MasteryQueue />
+        ) : activeNav === "objectives" ? (
+          <div className="flex flex-col h-full overflow-hidden">
+            <Header />
+            <div className="flex-1 overflow-auto">
+              <ObjectivesList />
+            </div>
+          </div>
         ) : (
           <div className="flex-1 overflow-hidden">
             <TaskList title={navTitle} />

@@ -10,6 +10,7 @@ const tabs: { id: FilterType; label: string }[] = [
   { id: "today", label: "Today" },
   { id: "day", label: "Day" },
   { id: "week", label: "Week" },
+  { id: "overdue", label: "Overdue" },
   { id: "no-date", label: "No Date" },
 ];
 
@@ -28,9 +29,9 @@ export function TimeFilterTabs() {
   }, [currentFilter]);
 
   return (
-    <div className="w-full border-b border-white/5 bg-background/50 backdrop-blur-md sticky top-0 z-20">
+    <div className="w-full border-b border-border/50 bg-background/50 backdrop-blur-md sticky top-0 z-20">
       <ScrollArea className="w-full whitespace-nowrap">
-        <div className="flex px-4 items-center h-14">
+        <div className="flex px-4 items-center h-10">
           {tabs.map((tab) => {
             const isActive = currentFilter === tab.id;
             return (
@@ -39,7 +40,7 @@ export function TimeFilterTabs() {
                 ref={isActive ? activeTabRef : null}
                 onClick={() => setFilter(tab.id)}
                 className={cn(
-                  "relative h-14 px-6 flex items-center justify-center text-sm font-semibold transition-all",
+                  "relative h-10 px-4 flex items-center justify-center text-xs font-semibold transition-all",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground",

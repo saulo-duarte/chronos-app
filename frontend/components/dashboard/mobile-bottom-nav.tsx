@@ -1,4 +1,4 @@
-import { LayoutDashboard, ListTodo, Brain, Layers, Plus } from "lucide-react";
+import { LayoutDashboard, ListTodo, Brain, Layers, Plus, Target } from "lucide-react";
 import { useDashboardStore } from "@/stores/use-dashboard-store";
 import { cn } from "@/lib/utils";
 import { MobileCollectionPicker } from "./mobile-collection-picker";
@@ -6,9 +6,9 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { id: "collections", label: "Collections", icon: Layers },
+  { id: "objectives", label: "Metas", icon: Target },
   { id: "tasks", label: "Home", icon: ListTodo },
-  { id: "mastery", label: "Mastery", icon: Brain },
+  { id: "collections", label: "Folders", icon: Layers },
 ];
 
 export function MobileBottomNav() {

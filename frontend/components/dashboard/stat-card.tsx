@@ -22,7 +22,7 @@ export function StatCard({
     <button
       onClick={onClick}
       className={cn(
-        "flex flex-col items-start gap-2 p-4 rounded-xl transition-all duration-300",
+        "flex flex-col items-start gap-1 p-3 rounded-xl transition-all duration-300",
         "bg-card/40 border border-white/5 backdrop-blur-sm",
         "hover:bg-card/60 hover:scale-[1.02] active:scale-[0.98] group",
         "min-w-[120px]",
